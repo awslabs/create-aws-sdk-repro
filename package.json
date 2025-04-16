@@ -1,0 +1,19 @@
+{
+	"name": "create-aws-sdk-repro",
+	"version": "1.0.0",
+	"description": "Create reproducible env for AWS SDK",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/awslabs/create-aws-sdk-repro.git"
+	},
+	"author": "AWS SDK JavaScript Team",
+	"license": "Apache-2.0",
+	"bugs": {
+		"url": "https://github.com/awslabs/create-aws-sdk-repro/issues"
+	},
+	"homepage": "https://github.com/awslabs/create-aws-sdk-repro#readme"
+}
