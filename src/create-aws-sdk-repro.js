@@ -128,6 +128,7 @@ console.log(response);
 		);
 	} else if (answers.environment === "browser") {
 		indexJs = `import { ${serviceClient}, ${answers.operation}Command } from '${answers.service}';
+import { fromCognitoIdentityPool } from "@aws-sdk/credential-provider-cognito-identity";
 
 const getHTMLElement = (title, content) => {
 const element = document.createElement("div");
@@ -147,7 +148,6 @@ return element;
 };
 
 const component = async () => {
-import { fromCognitoIdentityPool } from "@aws-sdk/credential-provider-cognito-identity";
 
 const client = new ${serviceClient}({
   region: '${answers.region}',
@@ -193,6 +193,26 @@ document.body.appendChild(await component());
 			path.join(projectDir, "package.json"),
 			JSON.stringify(packageJson, null, 2)
 		);
+		if (answers.environment === "browser") {
+			const htmlContent = `<!DOCTYPE html>
+		  <html lang="en">
+			<head>
+			<meta charset="UTF-8" />
+     		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+			<title>AWS SDK Repro Environment</title>
+			<script>
+      		if (typeof window.global === "undefined") {
+        		window.global = window;
+      		}
+    		</script>
+			</head>
+			<body>
+			  <script type="module" src="./index.js"></script>
+			</body>
+		  </html>`;
+
+			fs.writeFileSync(path.join(projectDir, "index.html"), htmlContent);
+		}
 	} else if (answers.environment === "react-native") {
 		indexJs = defaultExampleCode;
 	}
