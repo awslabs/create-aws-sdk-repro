@@ -62,12 +62,24 @@ const questions = [
 ];
 
 (async () => {
-	const answers = await prompts(questions);
+	const answers = await prompts(questions).catch((err) => {
+		console.error("Aborted:", err.message);
+		process.exit(1);
+	});
+	if (!answers) process.exit(1);
 
 	const projectDir = path.join(process.cwd(), answers.projectName);
 
-	if (!fs.existsSync(projectDir)) {
-		fs.mkdirSync(projectDir);
+	try {
+		if (!fs.existsSync(projectDir)) {
+			fs.mkdirSync(projectDir, { recursive: true });
+		} else {
+			console.error(`Error: Directory ${projectDir} already exists`);
+			process.exit(1);
+		}
+	} catch (err) {
+		console.error(`Error creating directory: ${err.message}`);
+		process.exit(1);
 	}
 
 	const selectedService = awsServices.find(
