@@ -147,12 +147,14 @@ return element;
 };
 
 const component = async () => {
+import { fromCognitoIdentityPool } from "@aws-sdk/credential-provider-cognito-identity";
+
 const client = new ${serviceClient}({
   region: '${answers.region}',
-  credentials: { // replace with AWS credentials
-    // accessKeyId: '', 
-    // secretAccessKey: '',
-  },
+  credentials: fromCognitoIdentityPool({
+    identityPoolId: "REPLACE_WITH_YOUR_IDENTITY_POOL_ID",
+    clientConfig: { region: '${answers.region}' }
+  }),
 });
 const input = { // ${answers.operation}Input
 
