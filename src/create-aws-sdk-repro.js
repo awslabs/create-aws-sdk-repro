@@ -1,8 +1,14 @@
 #!/usr/bin/env node
 
-const prompts = require("prompts");
-const fs = require("fs");
-const path = require("path");
+import prompts from "prompts";
+import { generateBrowserProject } from "./sdks/javascript/environments/browser";
+import { generateNodeProject } from "./sdks/javascript/environments/node";
+import { cognitoSetupInstructions } from "./src/common/cognito-config.js";
+import { fileURLToPath } from "url";
+import path from "path";
+import fs from "fs";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const awsServices = [
 	{ title: "S3", value: "@aws-sdk/client-s3" },
@@ -62,177 +68,38 @@ const questions = [
 ];
 
 (async () => {
-	const answers = await prompts(questions).catch((err) => {
-		console.error("Aborted:", err.message);
-		process.exit(1);
-	});
-	if (!answers) process.exit(1);
-
+	const answers = await prompts(questions);
 	const projectDir = path.join(process.cwd(), answers.projectName);
 
 	try {
-		if (!fs.existsSync(projectDir)) {
-			fs.mkdirSync(projectDir, { recursive: true });
-		} else {
-			console.error(`Error: Directory ${projectDir} already exists`);
-			process.exit(1);
+		fs.mkdirSync(projectDir, { recursive: true });
+
+		// Generate environment-specific files
+		switch (answers.environment) {
+			case "node":
+				await generateNodeProject(answers, projectDir);
+				break;
+			case "browser":
+				await generateBrowserProject(answers, projectDir);
+				break;
+			case "react-native":
+				throw new Error("React Native not implemented yet");
+			default:
+				throw new Error("Invalid environment");
 		}
-	} catch (err) {
-		console.error(`Error creating directory: ${err.message}`);
+
+		// Add common files
+		fs.writeFileSync(
+			path.join(projectDir, "COGNITO_SETUP.md"),
+			cognitoSetupInstructions()
+		);
+
+		console.log(`Project created successfully in ${projectDir}`);
+		console.log("Next steps:");
+		console.log("1. Configure Cognito in COGNITO_SETUP.md");
+		console.log("2. Run: npm install && npm start");
+	} catch (error) {
+		console.error("Project creation failed:", error.message);
 		process.exit(1);
-	}
-
-	const selectedService = awsServices.find(
-		(service) => service.value === answers.service
-	);
-	const serviceClient = `${selectedService.title}Client`;
-
-	let indexJs;
-	const operationName = answers.operation
-		.replace(/([a-z])([A-Z])/g, "$1$2")
-		.toLowerCase();
-	const defaultExampleCode = `import { ${serviceClient}, ${answers.operation}Command } from '${answers.service}';
-const client = new ${serviceClient}({
-  region: '${answers.region}',
-//  credentials: { // replace with AWS credentials
-    // accessKeyId: '', 
-    // secretAccessKey: '',
-//  },
-});
-const input = { // ${answers.operation}Input
-
-};
-const command = new ${answers.operation}Command(input); // check SDK docs for command name casing
-const response = await client.send(command);
-console.log(response);
-`;
-
-	if (answers.environment === "node") {
-		indexJs = defaultExampleCode;
-		const packageJson = {
-			name: answers.projectName,
-			version: "1.0.0",
-			description: `AWS SDK for JavaScript v3 project for ${answers.service}`,
-			main: "index.js",
-			type: "module",
-			dependencies: {
-				[answers.service]: "latest",
-			},
-			scripts: {
-				start: "node index.js",
-			},
-		};
-		fs.writeFileSync(
-			path.join(projectDir, "package.json"),
-			JSON.stringify(packageJson, null, 2)
-		);
-	} else if (answers.environment === "browser") {
-		indexJs = `import { ${serviceClient}, ${answers.operation}Command } from '${answers.service}';
-import { fromCognitoIdentityPool } from "@aws-sdk/credential-provider-cognito-identity";
-
-const getHTMLElement = (title, content) => {
-const element = document.createElement("div");
-element.style.margin = "30px";
-
-const titleDiv = document.createElement("div");
-titleDiv.innerHTML = title;
-const contentDiv = document.createElement("textarea");
-contentDiv.rows = 20;
-contentDiv.cols = 50;
-contentDiv.innerHTML = content;
-
-element.appendChild(titleDiv);
-element.appendChild(contentDiv);
-
-return element;
-};
-
-const component = async () => {
-
-const client = new ${serviceClient}({
-  region: '${answers.region}',
-  credentials: fromCognitoIdentityPool({
-    identityPoolId: "REPLACE_WITH_YOUR_IDENTITY_POOL_ID",
-    clientConfig: { region: '${answers.region}' }
-  }),
-});
-const input = { // ${answers.operation}Input
-
-};
-const command = new ${answers.operation}Command(input); // check SDK docs for command name casing
-const response = await client.send(command);
-console.log(response);
-
-return getHTMLElement(
-  "Data returned by v3:",
-  JSON.stringify(response, null, 2)
-);
-};
-
-(async () => {
-document.body.appendChild(await component());
-})();`;
-
-		const packageJson = {
-			name: answers.projectName,
-			version: "1.0.0",
-			description: `AWS SDK for JavaScript v3 project for ${answers.service}`,
-			private: true,
-			main: "index.js",
-			scripts: {
-				start: "vite --open",
-			},
-			devDependencies: {
-				vite: "latest",
-			},
-			dependencies: {
-				[answers.service]: "latest",
-			},
-		};
-		fs.writeFileSync(
-			path.join(projectDir, "package.json"),
-			JSON.stringify(packageJson, null, 2)
-		);
-		if (answers.environment === "browser") {
-			const htmlContent = `<!DOCTYPE html>
-		  <html lang="en">
-			<head>
-			<meta charset="UTF-8" />
-     		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-			<title>AWS SDK Repro Environment</title>
-			<script>
-      		if (typeof window.global === "undefined") {
-        		window.global = window;
-      		}
-    		</script>
-			</head>
-			<body>
-			  <script type="module" src="./index.js"></script>
-			</body>
-		  </html>`;
-
-			fs.writeFileSync(path.join(projectDir, "index.html"), htmlContent);
-		}
-	} else if (answers.environment === "react-native") {
-		indexJs = defaultExampleCode;
-	}
-	fs.writeFileSync(path.join(projectDir, "index.js"), indexJs);
-
-	console.log(
-		`Project "${answers.projectName}" has been created successfully!`
-	);
-	console.log("To run the project, navigate to the project directory and run:");
-	console.log(`  cd ${answers.projectName}`);
-
-	if (answers.environment === "node") {
-		console.log("  npm install");
-		console.log("  npm start");
-	} else if (answers.environment === "browser") {
-		console.log("  npm install");
-		console.log("  npm run start");
-	} else if (answers.environment === "react-native") {
-		console.log(
-			"  Follow the React Native setup instructions to run the project"
-		);
 	}
 })();
