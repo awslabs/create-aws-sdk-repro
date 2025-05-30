@@ -3,6 +3,10 @@
 	"version": "1.0.0",
 	"description": "Create reproducible env for AWS SDK",
 	"main": "index.js",
+	"type": "module",
+	"bin": {
+		"create-aws-sdk-repro": "./src/cli.js"
+	},
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
@@ -15,5 +19,9 @@
 	"bugs": {
 		"url": "https://github.com/awslabs/create-aws-sdk-repro/issues"
 	},
-	"homepage": "https://github.com/awslabs/create-aws-sdk-repro#readme"
+	"homepage": "https://github.com/awslabs/create-aws-sdk-repro#readme",
+	"dependencies": {
+		"path": "^0.12.7",
+		"prompts": "^2.4.2"
+	}
 }

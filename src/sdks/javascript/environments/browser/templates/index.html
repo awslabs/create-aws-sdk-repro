@@ -3,14 +3,25 @@
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>AWS SDK Repro Environment</title>
-		<script>
-			if (typeof window.global === "undefined") {
-				window.global = window;
+		<title>AWS SDK Browser Repro</title>
+		<style>
+			#aws-output,
+			#error {
+				white-space: pre-wrap;
+				font-family: monospace;
+				margin: 20px;
+				padding: 10px;
+				border: 1px solid #ccc;
 			}
-		</script>
+			#error {
+				color: red;
+			}
+		</style>
 	</head>
 	<body>
+		<h1>AWS SDK Repro Environment</h1>
+		<div id="error"></div>
+		<div id="aws-output"></div>
 		<script type="module" src="./index.js"></script>
 	</body>
 </html>
