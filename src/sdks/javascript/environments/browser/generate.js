@@ -16,7 +16,7 @@ export const generateBrowserProject = (answers, projectDir) => {
 	const populatedJs = jsTemplate
 		.replace(/{{serviceClient}}/g, answers.serviceClient)
 		.replace(/{{service}}/g, answers.service)
-		.replace(/{{operation}}/g, answers.operation);
+		.replace(/{{operation}}/g, answers.operationCommand || answers.operation);
 	// .replace(
 	// 	/{{cognitoConfig}}/g,
 	// 	cognitoTemplate(answers.region, answers.serviceClient)

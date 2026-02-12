@@ -10,6 +10,19 @@ import { generateJavaProject } from "./sdks/java/generate.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+// Utility functions for operation name conversion
+function kebabToPascalCase(str) {
+	return str
+		.split("-")
+		.map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+		.join("");
+}
+
+function kebabToCamelCase(str) {
+	const pascal = kebabToPascalCase(str);
+	return pascal.charAt(0).toLowerCase() + pascal.slice(1);
+}
+
 // Service lists for different SDKs
 export const JS_SERVICES = [
 	{ title: "S3", value: "@aws-sdk/client-s3" },
@@ -66,9 +79,9 @@ const QUESTIONS = [
 	{
 		type: "text",
 		name: "operation",
-		message: "Enter AWS service operation:",
+		message: "Enter AWS service operation (kebab-case, e.g., list-buckets):",
 		validate: (value) => !!value.trim() || "Operation is required",
-		initial: "ListBuckets",
+		initial: "list-buckets",
 	},
 	{
 		type: "text",
@@ -122,6 +135,10 @@ async function main() {
 }
 
 async function handleJavascriptProject(answers, projectDir) {
+	// Convert kebab-case operation to PascalCase + Command suffix for JS SDK
+	const operationPascal = kebabToPascalCase(answers.operation);
+	answers.operationCommand = `${operationPascal}Command`;
+	
 	switch (answers.environment) {
 		case "node":
 			await generateNodeProject(answers, projectDir);
@@ -141,9 +158,8 @@ async function handleJavaProject(answers, projectDir) {
 	answers.service = answers.service
 		.replace(/@aws-sdk\/client-/i, "")
 		.toLowerCase();
-	// Convert operation to Java method naming
-	answers.operation =
-		answers.operation.charAt(0).toLowerCase() + answers.operation.slice(1);
+	// Convert kebab-case operation to camelCase for Java
+	answers.operation = kebabToCamelCase(answers.operation);
 	answers.region = answers.region.toUpperCase().replace(/-/g, "_");
 	await generateJavaProject(answers, projectDir);
 }

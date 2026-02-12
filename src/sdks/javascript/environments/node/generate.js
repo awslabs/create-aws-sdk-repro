@@ -9,13 +9,13 @@ const generateIndexJs = (answers) => {
 	const selectedService = JS_SERVICES.find((s) => s.value === answers.service);
 	const serviceClient = `${selectedService}Client`;
 	return `
-import { S3Client, ${answers.operation}Command } from '@aws-sdk/client-s3';
+import { S3Client, ${answers.operationCommand} } from '@aws-sdk/client-s3';
 
 const main = async () => {
   try {
     const client = new S3Client();
     const input = {}; // Add your input parameters here
-    const command = new ${answers.operation}Command(input);
+    const command = new ${answers.operationCommand}(input);
     const response = await client.send(command);
     console.log('Success:', response);
   } catch (error) {
