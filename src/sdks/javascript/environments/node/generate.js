@@ -2,18 +2,24 @@ import fs from "fs";
 import { readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
-import { JS_SERVICES } from "../../../../cli.js";
+import { getServiceDisplayName } from "../../../../services.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
 const generateIndexJs = (answers) => {
-	const selectedService = JS_SERVICES.find((s) => s.value === answers.service);
-	const serviceClient = `${selectedService}Client`;
+	// Extract service name and create client name
+	const serviceName = answers.service.replace("@aws-sdk/client-", "");
+	const clientName = getServiceDisplayName(answers.service)
+		.split(" ")
+		.map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+		.join("") + "Client";
+	
 	return `
-import { S3Client, ${answers.operationCommand} } from '@aws-sdk/client-s3';
+import { ${clientName}, ${answers.operationCommand} } from '${answers.service}';
 
 const main = async () => {
   try {
-    const client = new S3Client();
+    const client = new ${clientName}();
     const input = {}; // Add your input parameters here
     const command = new ${answers.operationCommand}(input);
     const response = await client.send(command);
@@ -35,7 +41,7 @@ export const generateNodeProject = (answers, projectDir) => {
 		version: "1.0.0",
 		type: "module",
 		dependencies: {
-			"@aws-sdk/client-s3": "latest",
+			[answers.service]: "latest",
 			"@aws-sdk/credential-provider-node": "latest",
 			dotenv: "^16.0.0",
 		},

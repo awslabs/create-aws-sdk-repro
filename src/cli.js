@@ -7,6 +7,7 @@ import { fileURLToPath } from "url";
 import { generateBrowserProject } from "./sdks/javascript/environments/browser/generate.js";
 import { generateNodeProject } from "./sdks/javascript/environments/node/generate.js";
 import { generateJavaProject } from "./sdks/java/generate.js";
+import { AWS_SERVICES, isValidService, getServiceSuggestions, getServiceDisplayName } from "./services.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -24,13 +25,10 @@ function kebabToCamelCase(str) {
 }
 
 // Service lists for different SDKs
-export const JS_SERVICES = [
-	{ title: "S3", value: "@aws-sdk/client-s3" },
-	{ title: "DynamoDB", value: "@aws-sdk/client-dynamodb" },
-	{ title: "EC2", value: "@aws-sdk/client-ec2" },
-	{ title: "IAM", value: "@aws-sdk/client-iam" },
-	{ title: "Lambda", value: "@aws-sdk/client-lambda" },
-];
+export const JS_SERVICES = AWS_SERVICES.map(service => ({
+	title: getServiceDisplayName(service),
+	value: service
+}));
 
 const JAVA_SERVICES = [
 	{ title: "S3", value: "s3" },
@@ -69,11 +67,21 @@ const QUESTIONS = [
 		initial: `aws-sdk-repro${Date.now()}`,
 	},
 	{
-		type: "select",
+		type: (prev) => (prev === "java" ? null : "autocomplete"),
 		name: "service",
-		message: (prev) =>
-			`Select AWS service for ${(prev?.sdk || "JS").toUpperCase()}:`,
-		choices: (prev) => (prev.sdk === "js" ? JS_SERVICES : JAVA_SERVICES),
+		message: "Select or search for AWS service:",
+		choices: JS_SERVICES,
+		suggest: (input, choices) => {
+			const suggestions = getServiceSuggestions(input);
+			return choices.filter(choice => suggestions.includes(choice.value));
+		},
+		validate: (value) => {
+			if (!value) return "Service is required";
+			if (!isValidService(value)) {
+				return `Invalid service. Use format: @aws-sdk/client-<service-name>`;
+			}
+			return true;
+		},
 		initial: 0,
 	},
 	{
