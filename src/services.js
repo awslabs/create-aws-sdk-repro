@@ -206,6 +206,83 @@ export function isValidService(service) {
 }
 
 /**
+ * Calculate Levenshtein distance between two strings
+ * @param {string} a - First string
+ * @param {string} b - Second string
+ * @returns {number} - Edit distance
+ */
+function levenshteinDistance(a, b) {
+	const matrix = [];
+	
+	for (let i = 0; i <= b.length; i++) {
+		matrix[i] = [i];
+	}
+	
+	for (let j = 0; j <= a.length; j++) {
+		matrix[0][j] = j;
+	}
+	
+	for (let i = 1; i <= b.length; i++) {
+		for (let j = 1; j <= a.length; j++) {
+			if (b.charAt(i - 1) === a.charAt(j - 1)) {
+				matrix[i][j] = matrix[i - 1][j - 1];
+			} else {
+				matrix[i][j] = Math.min(
+					matrix[i - 1][j - 1] + 1, // substitution
+					matrix[i][j - 1] + 1,     // insertion
+					matrix[i - 1][j] + 1      // deletion
+				);
+			}
+		}
+	}
+	
+	return matrix[b.length][a.length];
+}
+
+/**
+ * Finds similar service names based on typos
+ * @param {string} service - The service package name to check
+ * @param {number} maxDistance - Maximum edit distance (default: 2)
+ * @returns {string[]} - Array of similar service names
+ */
+export function findSimilarServices(service, maxDistance = 2) {
+	// Extract just the service name part for comparison
+	const inputServiceName = service.replace("@aws-sdk/client-", "");
+	
+	return AWS_SERVICES.filter(validService => {
+		const validServiceName = validService.replace("@aws-sdk/client-", "");
+		const distance = levenshteinDistance(inputServiceName, validServiceName);
+		return distance > 0 && distance <= maxDistance;
+	}).slice(0, 5); // Limit to top 5 suggestions
+}
+
+/**
+ * Provides helpful error message for invalid services
+ * @param {string} service - The invalid service name
+ * @returns {string} - Error message with suggestions
+ */
+export function getServiceErrorMessage(service) {
+	// Check if it's missing the @aws-sdk/client- prefix
+	if (!service.startsWith("@aws-sdk/client-")) {
+		const withPrefix = `@aws-sdk/client-${service}`;
+		if (isValidService(withPrefix)) {
+			return `Did you mean: ${withPrefix}?`;
+		}
+		return `Service must start with "@aws-sdk/client-". Did you mean: ${withPrefix}?`;
+	}
+	
+	// Find similar services
+	const similar = findSimilarServices(service);
+	
+	if (similar.length > 0) {
+		const suggestions = similar.map(s => getServiceDisplayName(s)).join(", ");
+		return `Service not found. Did you mean: ${suggestions}?`;
+	}
+	
+	return "Service not found. Use format: @aws-sdk/client-<service-name>";
+}
+
+/**
  * Gets service name suggestions based on partial input
  * @param {string} input - Partial service name
  * @returns {string[]} - Array of matching service names

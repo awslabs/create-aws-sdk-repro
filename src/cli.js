@@ -8,6 +8,12 @@ import { generateBrowserProject } from "./sdks/javascript/environments/browser/g
 import { generateNodeProject } from "./sdks/javascript/environments/node/generate.js";
 import { generateJavaProject } from "./sdks/java/generate.js";
 import { AWS_SERVICES, isValidService, getServiceSuggestions, getServiceDisplayName } from "./services.js";
+import { 
+	getServiceOperations, 
+	isValidOperation, 
+	getOperationSuggestions,
+	getOperationErrorMessage 
+} from "./operations.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -38,8 +44,11 @@ const JAVA_SERVICES = [
 	{ title: "Lambda", value: "lambda" },
 ];
 
-const QUESTIONS = [
-	{
+async function main() {
+	console.log("🚀 AWS SDK Reproduction Project Generator\n");
+	
+	// Step 1: SDK Selection
+	const sdkAnswer = await prompts({
 		type: "select",
 		name: "sdk",
 		message: "Select AWS SDK language:",
@@ -48,70 +57,122 @@ const QUESTIONS = [
 			{ title: "Java", value: "java" },
 		],
 		initial: 0,
-	},
-	{
-		type: (prev) => (prev === "java" ? null : "select"),
-		name: "environment",
-		message: "Select JavaScript environment:",
-		choices: [
-			{ title: "Node.js", value: "node" },
-			{ title: "Browser", value: "browser" },
-			{ title: "React Native", value: "react-native" },
-		],
-	},
-	{
+	}, { onCancel: () => process.exit(0) });
+
+	if (!sdkAnswer.sdk) process.exit(0);
+
+	// Step 2: Environment (JS only)
+	let environmentAnswer = { environment: null };
+	if (sdkAnswer.sdk === "js") {
+		environmentAnswer = await prompts({
+			type: "select",
+			name: "environment",
+			message: "Select JavaScript environment:",
+			choices: [
+				{ title: "Node.js", value: "node" },
+				{ title: "Browser", value: "browser" },
+				{ title: "React Native", value: "react-native" },
+			],
+		}, { onCancel: () => process.exit(0) });
+	}
+
+	// Step 3: Project Name
+	const projectAnswer = await prompts({
 		type: "text",
 		name: "projectName",
 		message: "Enter project name:",
 		validate: (value) => !!value.trim() || "Project name is required",
 		initial: `aws-sdk-repro${Date.now()}`,
-	},
-	{
-		type: (prev) => (prev === "java" ? null : "autocomplete"),
-		name: "service",
-		message: "Select or search for AWS service:",
-		choices: JS_SERVICES,
-		suggest: (input, choices) => {
-			const suggestions = getServiceSuggestions(input);
-			return choices.filter(choice => suggestions.includes(choice.value));
-		},
+	}, { onCancel: () => process.exit(0) });
+
+	// Step 4: Service Selection (JS only for now)
+	let serviceAnswer = { service: null };
+	if (sdkAnswer.sdk === "js") {
+		serviceAnswer = await prompts({
+			type: "autocomplete",
+			name: "service",
+			message: "Select or search for AWS service:",
+			choices: JS_SERVICES,
+			suggest: (input, choices) => {
+				const suggestions = getServiceSuggestions(input);
+				return choices.filter(choice => suggestions.includes(choice.value));
+			},
+			validate: (value) => {
+				if (!value) return "Service is required";
+				if (!isValidService(value)) {
+					return `Invalid service. Use format: @aws-sdk/client-<service-name>`;
+				}
+				return true;
+			},
+			initial: 0,
+		}, { onCancel: () => process.exit(0) });
+	} else {
+		// Java service selection (keep existing behavior)
+		serviceAnswer = await prompts({
+			type: "select",
+			name: "service",
+			message: "Select AWS service:",
+			choices: JAVA_SERVICES,
+			initial: 0,
+		}, { onCancel: () => process.exit(0) });
+	}
+
+	// Step 5: Fetch available operations for the selected service (JS only)
+	let availableOperations = [];
+	if (sdkAnswer.sdk === "js") {
+		console.log(`\n⏳ Fetching available operations for ${getServiceDisplayName(serviceAnswer.service)}...`);
+		availableOperations = await getServiceOperations(serviceAnswer.service);
+		if (availableOperations.length > 0) {
+			console.log(`✓ Found ${availableOperations.length} operations\n`);
+		} else {
+			console.log(`⚠ Could not fetch operations list. Format validation only.\n`);
+		}
+	}
+
+	// Step 6: Operation Selection
+	const operationAnswer = await prompts({
+		type: availableOperations.length > 0 ? "autocomplete" : "text",
+		name: "operation",
+		message: availableOperations.length > 0 
+			? "Select or search for operation (kebab-case):"
+			: "Enter AWS service operation (kebab-case, e.g., list-buckets):",
+		choices: availableOperations.length > 0 
+			? availableOperations.map(op => ({ title: op, value: op }))
+			: undefined,
+		suggest: availableOperations.length > 0
+			? (input, choices) => {
+				const suggestions = getOperationSuggestions(input, availableOperations);
+				return choices.filter(choice => suggestions.includes(choice.value));
+			}
+			: undefined,
 		validate: (value) => {
-			if (!value) return "Service is required";
-			if (!isValidService(value)) {
-				return `Invalid service. Use format: @aws-sdk/client-<service-name>`;
+			if (!value || !value.trim()) return "Operation is required";
+			if (!isValidOperation(value, availableOperations)) {
+				return getOperationErrorMessage(value, availableOperations);
 			}
 			return true;
 		},
-		initial: 0,
-	},
-	{
-		type: "text",
-		name: "operation",
-		message: "Enter AWS service operation (kebab-case, e.g., list-buckets):",
-		validate: (value) => !!value.trim() || "Operation is required",
-		initial: "list-buckets",
-	},
-	{
+		initial: availableOperations.length > 0 ? 0 : "list-buckets",
+	}, { onCancel: () => process.exit(0) });
+
+	// Step 7: Region
+	const regionAnswer = await prompts({
 		type: "text",
 		name: "region",
 		message: "Enter AWS region:",
-		initial: (prev) => (prev?.sdk === "java" ? "US_WEST_1" : "us-west-1"),
-		validate: (value, prev) => {
-			const sdkType = prev?.sdk || "js";
-			return !!value.trim() || "Region is required";
-		},
-	},
-];
+		initial: sdkAnswer.sdk === "java" ? "US_WEST_1" : "us-west-1",
+		validate: (value) => !!value.trim() || "Region is required",
+	}, { onCancel: () => process.exit(0) });
 
-async function main() {
-	const answers = await prompts(QUESTIONS, {
-		onCancel: () => {
-			console.log("Operation cancelled");
-			process.exit(0);
-		},
-	});
-
-	if (!answers.sdk) process.exit(0);
+	// Combine all answers
+	const answers = {
+		...sdkAnswer,
+		...environmentAnswer,
+		...projectAnswer,
+		...serviceAnswer,
+		...operationAnswer,
+		...regionAnswer,
+	};
 
 	const projectDir = path.join(process.cwd(), answers.projectName);
 
