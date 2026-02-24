@@ -7,7 +7,7 @@ import { fileURLToPath } from "url";
 import { generateBrowserProject } from "./sdks/javascript/environments/browser/generate.js";
 import { generateNodeProject } from "./sdks/javascript/environments/node/generate.js";
 import { generateJavaProject } from "./sdks/java/generate.js";
-import { AWS_SERVICES, isValidService, getServiceSuggestions, getServiceDisplayName } from "./services.js";
+import { AWS_SERVICES, isValidService, getServiceSuggestions, getServiceDisplayName, getServiceErrorMessage } from "./services.js";
 import { 
 	getServiceOperations, 
 	isValidOperation, 
@@ -45,7 +45,7 @@ const JAVA_SERVICES = [
 ];
 
 async function main() {
-	console.log("🚀 AWS SDK Reproduction Project Generator\n");
+	console.log("AWS SDK Reproduction Project Generator\n");
 	
 	// Step 1: SDK Selection
 	const sdkAnswer = await prompts({
@@ -100,14 +100,14 @@ async function main() {
 			validate: (value) => {
 				if (!value) return "Service is required";
 				if (!isValidService(value)) {
-					return `Invalid service. Use format: @aws-sdk/client-<service-name>`;
+					return getServiceErrorMessage(value);
 				}
 				return true;
 			},
 			initial: 0,
 		}, { onCancel: () => process.exit(0) });
 	} else {
-		// Java service selection (keep existing behavior)
+		// Java service selection 
 		serviceAnswer = await prompts({
 			type: "select",
 			name: "service",
@@ -120,12 +120,12 @@ async function main() {
 	// Step 5: Fetch available operations for the selected service (JS only)
 	let availableOperations = [];
 	if (sdkAnswer.sdk === "js") {
-		console.log(`\n⏳ Fetching available operations for ${getServiceDisplayName(serviceAnswer.service)}...`);
+		console.log(`\nFetching available operations for ${getServiceDisplayName(serviceAnswer.service)}...`);
 		availableOperations = await getServiceOperations(serviceAnswer.service);
 		if (availableOperations.length > 0) {
-			console.log(`✓ Found ${availableOperations.length} operations\n`);
+			console.log(`Found ${availableOperations.length} operations\n`);
 		} else {
-			console.log(`⚠ Could not fetch operations list. Format validation only.\n`);
+			console.log(`Could not fetch operations list. Format validation only.\n`);
 		}
 	}
 
@@ -197,7 +197,7 @@ async function main() {
 
 		showSuccessMessage(answers, projectDir);
 	} catch (error) {
-		console.error(`❌ Error creating project: ${error.message}`);
+		console.error(`Error creating project: ${error.message}`);
 		cleanupOnError(projectDir);
 		process.exit(1);
 	}
@@ -253,7 +253,7 @@ function showSuccessMessage(answers, projectDir) {
 	};
 
 	console.log(`
-✅ Successfully created ${answers.sdk.toUpperCase()} project at:
+Successfully created ${answers.sdk.toUpperCase()} project at:
 ${path.resolve(projectDir)}
 ${instructions[answers.sdk]}`);
 }
