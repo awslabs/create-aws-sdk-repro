@@ -6,6 +6,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { generateBrowserProject } from "./sdks/javascript/environments/browser/generate.js";
 import { generateNodeProject } from "./sdks/javascript/environments/node/generate.js";
+import { generateReactNativeProject } from "./sdks/javascript/environments/react-native/generate.js";
 import { generateJavaProject } from "./sdks/java/generate.js";
 import { AWS_SERVICES, isValidService, getServiceSuggestions, getServiceDisplayName, getServiceErrorMessage } from "./services.js";
 import { 
@@ -188,7 +189,10 @@ async function main() {
 			process.exit(1);
 		}
 
-		fs.mkdirSync(projectDir, { recursive: true });
+		// React Native creates its own directory, so skip creation for it
+		if (answers.environment !== "react-native") {
+			fs.mkdirSync(projectDir, { recursive: true });
+		}
 
 		// JavaScript project generation
 		await handleJavascriptProject(answers, projectDir);
@@ -226,7 +230,8 @@ async function handleJavascriptProject(answers, projectDir) {
 			await generateBrowserProject(answers, projectDir);
 			break;
 		case "react-native":
-			throw new Error("React Native support not implemented yet");
+			await generateReactNativeProject(answers, projectDir);
+			break;
 		default:
 			throw new Error(`Invalid environment: ${answers.environment}`);
 	}
