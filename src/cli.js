@@ -14,6 +14,14 @@ import {
 	getOperationSuggestions,
 	getOperationErrorMessage 
 } from "./operations.js";
+import {
+	AWS_REGIONS,
+	isValidRegion,
+	getRegionSuggestions,
+	getRegionDisplayName,
+	getRegionErrorMessage,
+	standardRegionToJava
+} from "./regions.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -48,33 +56,32 @@ async function main() {
 	console.log("AWS SDK Reproduction Project Generator\n");
 	
 	// Step 1: SDK Selection
-	const sdkAnswer = await prompts({
+	const sdkAnswer = { sdk: "js" }; // Default to JavaScript only
+	
+	// Uncomment below to re-enable Java option:
+	// const sdkAnswer = await prompts({
+	// 	type: "select",
+	// 	name: "sdk",
+	// 	message: "Select AWS SDK language:",
+	// 	choices: [
+	// 		{ title: "JavaScript", value: "js" },
+	// 		{ title: "Java", value: "java" },
+	// 	],
+	// 	initial: 0,
+	// }, { onCancel: () => process.exit(0) });
+	// if (!sdkAnswer.sdk) process.exit(0);
+
+	// Step 2: Environment
+	const environmentAnswer = await prompts({
 		type: "select",
-		name: "sdk",
-		message: "Select AWS SDK language:",
+		name: "environment",
+		message: "Select JavaScript environment:",
 		choices: [
-			{ title: "JavaScript", value: "js" },
-			{ title: "Java", value: "java" },
+			{ title: "Node.js", value: "node" },
+			{ title: "Browser", value: "browser" },
+			{ title: "React Native", value: "react-native" },
 		],
-		initial: 0,
 	}, { onCancel: () => process.exit(0) });
-
-	if (!sdkAnswer.sdk) process.exit(0);
-
-	// Step 2: Environment (JS only)
-	let environmentAnswer = { environment: null };
-	if (sdkAnswer.sdk === "js") {
-		environmentAnswer = await prompts({
-			type: "select",
-			name: "environment",
-			message: "Select JavaScript environment:",
-			choices: [
-				{ title: "Node.js", value: "node" },
-				{ title: "Browser", value: "browser" },
-				{ title: "React Native", value: "react-native" },
-			],
-		}, { onCancel: () => process.exit(0) });
-	}
 
 	// Step 3: Project Name
 	const projectAnswer = await prompts({
@@ -85,48 +92,33 @@ async function main() {
 		initial: `aws-sdk-repro${Date.now()}`,
 	}, { onCancel: () => process.exit(0) });
 
-	// Step 4: Service Selection (JS only for now)
-	let serviceAnswer = { service: null };
-	if (sdkAnswer.sdk === "js") {
-		serviceAnswer = await prompts({
-			type: "autocomplete",
-			name: "service",
-			message: "Select or search for AWS service:",
-			choices: JS_SERVICES,
-			suggest: (input, choices) => {
-				const suggestions = getServiceSuggestions(input);
-				return choices.filter(choice => suggestions.includes(choice.value));
-			},
-			validate: (value) => {
-				if (!value) return "Service is required";
-				if (!isValidService(value)) {
-					return getServiceErrorMessage(value);
-				}
-				return true;
-			},
-			initial: 0,
-		}, { onCancel: () => process.exit(0) });
-	} else {
-		// Java service selection 
-		serviceAnswer = await prompts({
-			type: "select",
-			name: "service",
-			message: "Select AWS service:",
-			choices: JAVA_SERVICES,
-			initial: 0,
-		}, { onCancel: () => process.exit(0) });
-	}
+	// Step 4: Service Selection
+	const serviceAnswer = await prompts({
+		type: "autocomplete",
+		name: "service",
+		message: "Select or search for AWS service:",
+		choices: JS_SERVICES,
+		suggest: (input, choices) => {
+			const suggestions = getServiceSuggestions(input);
+			return choices.filter(choice => suggestions.includes(choice.value));
+		},
+		validate: (value) => {
+			if (!value) return "Service is required";
+			if (!isValidService(value)) {
+				return getServiceErrorMessage(value);
+			}
+			return true;
+		},
+		initial: 0,
+	}, { onCancel: () => process.exit(0) });
 
-	// Step 5: Fetch available operations for the selected service (JS only)
-	let availableOperations = [];
-	if (sdkAnswer.sdk === "js") {
-		console.log(`\nFetching available operations for ${getServiceDisplayName(serviceAnswer.service)}...`);
-		availableOperations = await getServiceOperations(serviceAnswer.service);
-		if (availableOperations.length > 0) {
-			console.log(`Found ${availableOperations.length} operations\n`);
-		} else {
-			console.log(`Could not fetch operations list. Format validation only.\n`);
-		}
+	// Step 5: Fetch available operations for the selected service
+	console.log(`\nFetching available operations for ${getServiceDisplayName(serviceAnswer.service)}...`);
+	const availableOperations = await getServiceOperations(serviceAnswer.service);
+	if (availableOperations.length > 0) {
+		console.log(`Found ${availableOperations.length} operations\n`);
+	} else {
+		console.log(`Could not fetch operations list. Format validation only.\n`);
 	}
 
 	// Step 6: Operation Selection
@@ -157,11 +149,25 @@ async function main() {
 
 	// Step 7: Region
 	const regionAnswer = await prompts({
-		type: "text",
+		type: "autocomplete",
 		name: "region",
-		message: "Enter AWS region:",
-		initial: sdkAnswer.sdk === "java" ? "US_WEST_1" : "us-west-1",
-		validate: (value) => !!value.trim() || "Region is required",
+		message: "Select or enter AWS region:",
+		choices: AWS_REGIONS.map(region => ({
+			title: `${region} - ${getRegionDisplayName(region)}`,
+			value: region
+		})),
+		suggest: (input, choices) => {
+			const suggestions = getRegionSuggestions(input);
+			return choices.filter(choice => suggestions.includes(choice.value));
+		},
+		validate: (value) => {
+			if (!value || !value.trim()) return "Region is required";
+			if (!isValidRegion(value)) {
+				return getRegionErrorMessage(value);
+			}
+			return true;
+		},
+		initial: "us-west-1",
 	}, { onCancel: () => process.exit(0) });
 
 	// Combine all answers
@@ -184,16 +190,20 @@ async function main() {
 
 		fs.mkdirSync(projectDir, { recursive: true });
 
-		switch (answers.sdk) {
-			case "js":
-				await handleJavascriptProject(answers, projectDir);
-				break;
-			case "java":
-				await handleJavaProject(answers, projectDir);
-				break;
-			default:
-				throw new Error(`Unsupported SDK: ${answers.sdk}`);
-		}
+		// JavaScript project generation
+		await handleJavascriptProject(answers, projectDir);
+		
+		// Java support preserved
+		// switch (answers.sdk) {
+		// 	case "js":
+		// 		await handleJavascriptProject(answers, projectDir);
+		// 		break;
+		// 	case "java":
+		// 		await handleJavaProject(answers, projectDir);
+		// 		break;
+		// 	default:
+		// 		throw new Error(`Unsupported SDK: ${answers.sdk}`);
+		// }
 
 		showSuccessMessage(answers, projectDir);
 	} catch (error) {
@@ -229,7 +239,8 @@ async function handleJavaProject(answers, projectDir) {
 		.toLowerCase();
 	// Convert kebab-case operation to camelCase for Java
 	answers.operation = kebabToCamelCase(answers.operation);
-	answers.region = answers.region.toUpperCase().replace(/-/g, "_");
+	// Convert standard region format to Java format (us-west-1 -> US_WEST_1)
+	answers.region = standardRegionToJava(answers.region);
 	await generateJavaProject(answers, projectDir);
 }
 
