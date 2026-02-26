@@ -6,7 +6,7 @@ import os from "os";
 /**
  * Attempts to get available operations for a service by installing and inspecting the package
  * @param {string} servicePackage - The service package name (e.g., "@aws-sdk/client-s3")
- * @returns {Promise<string[]>} - Array of operation names in kebab-case, or empty array if unavailable
+ * @returns {Promise<{operations: string[], clientName: string}>} - Operations in kebab-case and actual client name
  */
 export async function getServiceOperations(servicePackage) {
 	let tempDir = null;
@@ -45,6 +45,7 @@ export async function getServiceOperations(servicePackage) {
 		const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
 		
 		const operations = new Set();
+		let clientName = "";
 		
 		// Method 1: Parse exports field from package.json
 		if (packageJson.exports) {
@@ -59,6 +60,12 @@ export async function getServiceOperations(servicePackage) {
 							offset > 0 ? `-${p1.toLowerCase()}` : p1.toLowerCase()
 						);
 					operations.add(operationName);
+				}
+				
+				// Look for the client export (e.g., "./DynamoDBClient")
+				const clientMatch = key.match(/^\.\/([A-Za-z0-9]+Client)$/);
+				if (clientMatch && !clientName) {
+					clientName = clientMatch[1];
 				}
 			}
 		}
@@ -97,6 +104,21 @@ export async function getServiceOperations(servicePackage) {
 			}
 		}
 		
+		// Fallback: Find client name from dist-cjs or dist-es if not found in exports
+		if (!clientName) {
+			for (const distDir of ["dist-cjs", "dist-es"]) {
+				const dir = path.join(packagePath, distDir);
+				if (fs.existsSync(dir)) {
+					const files = fs.readdirSync(dir);
+					const clientFile = files.find(f => f.match(/^[A-Z][a-zA-Z0-9]*Client\.(js|mjs)$/));
+					if (clientFile) {
+						clientName = clientFile.replace(/\.(m)?js$/, '');
+						break;
+					}
+				}
+			}
+		}
+		
 		// Cleanup
 		if (tempDir && fs.existsSync(tempDir)) {
 			fs.rmSync(tempDir, { recursive: true, force: true });
@@ -104,7 +126,10 @@ export async function getServiceOperations(servicePackage) {
 		
 		const result = Array.from(operations).sort();
 		console.log(`  Found ${result.length} operations`);
-		return result;
+		if (clientName) {
+			console.log(`  Client: ${clientName}`);
+		}
+		return { operations: result, clientName };
 		
 	} catch (error) {
 		// Cleanup on error
@@ -116,9 +141,9 @@ export async function getServiceOperations(servicePackage) {
 			}
 		}
 		
-		// If we can't fetch operations, return empty array
+		// If we can't fetch operations, return empty
 		console.warn(`  Could not fetch operations: ${error.message}`);
-		return [];
+		return { operations: [], clientName: "" };
 	}
 }
 

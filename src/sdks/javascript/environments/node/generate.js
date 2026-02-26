@@ -7,12 +7,11 @@ import { getServiceDisplayName } from "../../../../services.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const generateIndexJs = (answers) => {
-	// Extract service name and create client name
-	const serviceName = answers.service.replace("@aws-sdk/client-", "");
-	const clientName = getServiceDisplayName(answers.service)
+	// Use actual client name from SDK package, with fallback to derived name
+	const clientName = answers.clientName || (getServiceDisplayName(answers.service)
 		.split(" ")
 		.map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-		.join("") + "Client";
+		.join("") + "Client");
 	
 	return `
 import { ${clientName}, ${answers.operationCommand} } from '${answers.service}';

@@ -10,12 +10,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 export const generateReactNativeProject = (answers, projectDir) => {
 	console.log("\nInitializing React Native project (this may take a few minutes)...");
 	
-	// Extract service name and create client name
+	// Use actual client name from SDK package, with fallback to derived name
 	const serviceName = answers.service.replace("@aws-sdk/client-", "");
-	const clientName = getServiceDisplayName(answers.service)
+	const clientName = answers.clientName || (getServiceDisplayName(answers.service)
 		.split(" ")
 		.map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-		.join("") + "Client";
+		.join("") + "Client");
 	
 	// React Native requires alphanumeric project names (no hyphens, underscores, or special chars)
 	const projectName = answers.projectName.replace(/[^a-zA-Z0-9]/g, "");

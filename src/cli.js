@@ -115,7 +115,7 @@ async function main() {
 
 	// Step 5: Fetch available operations for the selected service
 	console.log(`\nFetching available operations for ${getServiceDisplayName(serviceAnswer.service)}...`);
-	const availableOperations = await getServiceOperations(serviceAnswer.service);
+	const { operations: availableOperations, clientName: actualClientName } = await getServiceOperations(serviceAnswer.service);
 	if (availableOperations.length > 0) {
 		console.log(`Found ${availableOperations.length} operations\n`);
 	} else {
@@ -179,6 +179,7 @@ async function main() {
 		...serviceAnswer,
 		...operationAnswer,
 		...regionAnswer,
+		clientName: actualClientName, // Actual client import from SDK package
 	};
 
 	const projectDir = path.join(process.cwd(), answers.projectName);

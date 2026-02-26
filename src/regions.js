@@ -1,5 +1,4 @@
 // Comprehensive list of AWS regions
-// Source: https://docs.aws.amazon.com/general/latest/gr/rande.html
 
 export const AWS_REGIONS = [
 	// US Regions

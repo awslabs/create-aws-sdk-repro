@@ -7,12 +7,12 @@ import { getServiceDisplayName } from "../../../../services.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export const generateBrowserProject = (answers, projectDir) => {
-	// Extract service name and create client name
+	// Use actual client name from SDK package, with fallback to derived name
 	const serviceName = answers.service.replace("@aws-sdk/client-", "");
-	const clientName = getServiceDisplayName(answers.service)
+	const clientName = answers.clientName || (getServiceDisplayName(answers.service)
 		.split(" ")
 		.map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-		.join("") + "Client";
+		.join("") + "Client");
 	
 	// 1. Generate main JavaScript file
 	const jsTemplate = readFileSync(
