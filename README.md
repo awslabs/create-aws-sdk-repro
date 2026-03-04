@@ -1,43 +1,119 @@
 # Create minimal reproduction for AWS SDKs
+
 [![Apache 2 licensed][apache-badge]][apache-url]
 
 [apache-badge]: https://img.shields.io/badge/license-APACHE2-blue.svg
 [apache-url]: https://github.com/awslabs/aws-sdk-python/blob/main/LICENSE
 
-The `create-aws-sdk-repro` is a command-line interface (CLI) tool designed to help developers create reproducible environments for troubleshooting AWS SDK for JavaScript v3 issues. It streamlines the setup process by automatically configuring a project with your specified AWS service, operation, and target environment (Node.js, Browser, or React Native), including all necessary dependencies and boilerplate code.
+`create-aws-sdk-repro` is a CLI tool that generates ready-to-run project environments for AWS SDK for JavaScript v3. It supports Node.js, Browser (Vite + Cognito), and React Native environments across AWS services with autocomplete, operation validation, and typo detection.
 
 ## Prerequisites
 
-- Install [Node.js](https://nodejs.org/)
-- AWS credentials configured on your machine (credentials can also be entered during setup)
+- [Node.js](https://nodejs.org/)
+- AWS credentials configured on your machine (for Node.js projects)
+  - See [Configuring the AWS SDK for JavaScript](https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/configuring-the-jssdk.html)
 
-## Installation & Usage:
+## Installation & Usage
 
-- Fork and clone this repository
-- Install dependencies
-  - `cd create-aws-sdk-repro/ && npm install`
-- Change directory into src and run the setup script
-  - `cd src/ && ./create-aws-sdk-env.js`
-- Follow the interactive prompts
+```bash
+# Clone the repository
+git clone https://github.com/awslabs/create-aws-sdk-repro.git
+cd create-aws-sdk-repro
+
+# Install dependencies
+npm install
+
+# Run the CLI
+node src/cli.js
+```
+
+## Interactive Prompts
+
+The CLI guides you through the following steps:
+
 ```console
-? Enter a name for your project: my-s3-project
-? Select the environment type: Node
-? Select the AWS service you want to work with: S3
-? Enter the service operation you want an example for: ListBuckets
-? Enter the AWS region (leave blank for us-west-1): us-east-1
-? Include AWS SDK examples? Yes
-Project "my-s3-project" has been created successfully!
-To run the project, navigate to the project directory and run:
-  cd my-s3-project
+AWS SDK Reproduction Project Generator
+
+? Select JavaScript environment: (Node.js / Browser / React Native)
+? Enter project name: aws-sdk-repro1234567890
+? Select or search for AWS service: (autocomplete from 198 services)
+
+Fetching available operations for S3...
+Found 128 operations
+
+? Select or search for operation (kebab-case): list-buckets
+? Select or enter AWS region: us-east-1 - US East (N. Virginia)
+
+Successfully created JS project at:
+/path/to/aws-sdk-repro1234567890
+
+  To get started:
+  cd aws-sdk-repro1234567890
   npm install
   npm start
 ```
 
-## Additional Configuration
-- For operations requiring input parameters, modify the `index.js` file before running `npm start` (For example: client parameters, credential provdiers etc.) 
-- If AWS credentials aren't configured globally, add them to `index.js`
-- Simple operations (like S3 ListBuckets) can be run immediately as the example code is pre-configured
+## Environments
 
+### Node.js
+
+Generates a project using the default AWS credential chain. Run with `npm start`.
+
+### Browser
+
+Generates a Vite-based project with Amazon Cognito Identity Pool for browser-safe credentials. A `COGNITO_SETUP.md` guide is included with setup instructions. Run with `npm start` (opens browser via Vite dev server).
+
+### React Native
+
+Generates a full React Native project via `@react-native-community/cli` (pinned to RN 0.76.6 for Xcode 15 compatibility). Includes required polyfills (`react-native-get-random-values`, `react-native-url-polyfill`, `web-streams-polyfill`) and Cognito authentication.
+
+## Features
+
+- **Service autocomplete**: Search across `@aws-sdk/client-*` packages with fuzzy matching
+- **Typo detection**: Levenshtein distance (max 2 edits) suggests corrections for mistyped services and regions
+- **Dynamic operation discovery**: Temporarily installs the selected SDK package to discover available operations and extract the correct client name (e.g., `DynamoDBClient` not `DynamodbClient`)
+- **Region validation**: AWS regions with display names, format validation, and underscore-to-hyphen correction
+- **Kebab-case input**: Operations entered as `list-buckets` are automatically converted to `ListBucketsCommand`
+
+## Testing Locally
+
+To test the CLI end-to-end:
+
+```bash
+# Run the CLI and generate a project
+node src/cli.js
+
+# Navigate to the generated project
+cd <your-project-name>
+
+# Install dependencies and run
+npm install
+npm start
+```
+
+For Node.js projects, ensure your AWS credentials are configured (`aws configure` or environment variables). For Browser and React Native projects, follow the generated `COGNITO_SETUP.md` to configure an Identity Pool before running.
+
+### Quick smoke test
+
+```bash
+# Generate a Node.js project for S3 ListBuckets
+node src/cli.js
+# Select: Node.js → any project name → @aws-sdk/client-s3 → list-buckets → us-east-1
+
+# Verify the generated project runs
+cd <project-name>
+npm install
+npm start
+```
+
+Operations like `ListBuckets`, `DescribeInstances`, and `ListTables` work with an empty input object, so the generated project runs out of the box. For operations that require parameters, modify the `input` object in the generated `index.js`:
+
+```javascript
+const input = {
+  // Add your input parameters here
+  // IDE autocomplete will show available fields since types are already imported
+};
+```
 
 ## Security
 
@@ -46,4 +122,3 @@ See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more inform
 ## License
 
 This project is licensed under the Apache-2.0 License.
-
