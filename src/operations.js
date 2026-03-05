@@ -6,7 +6,7 @@ import os from "os";
 /**
  * Attempts to get available operations for a service by installing and inspecting the package
  * @param {string} servicePackage - The service package name (e.g., "@aws-sdk/client-s3")
- * @returns {Promise<{operations: string[], clientName: string}>} - Operations in kebab-case and actual client name
+ * @returns {Promise<{operations: string[], clientName: string, error?: string}>} - Operations in kebab-case, actual client name, and optional error
  */
 export async function getServiceOperations(servicePackage) {
 	let tempDir = null;
@@ -27,11 +27,24 @@ export async function getServiceOperations(servicePackage) {
 		
 		// Install the package
 		console.log(`  Installing ${servicePackage}...`);
-		execSync(`npm install ${servicePackage}@latest --no-save --silent --no-audit --no-fund --loglevel=error`, {
-			cwd: tempDir,
-			stdio: "pipe",
-			timeout: 60000, // 60 second timeout
-		});
+		try {
+			execSync(`npm install ${servicePackage}@latest --no-save --silent --no-audit --no-fund --loglevel=error`, {
+				cwd: tempDir,
+				stdio: "pipe",
+				timeout: 60000, // 60 second timeout
+			});
+		} catch (installError) {
+			// Check if it's a 404 (package doesn't exist)
+			const errorOutput = installError.stderr?.toString() || installError.message;
+			if (errorOutput.includes('404') || errorOutput.includes('Not Found')) {
+				return { 
+					operations: [], 
+					clientName: "", 
+					error: `Package "${servicePackage}" not found on npm. Please verify the package name.`
+				};
+			}
+			throw installError; // Re-throw other errors
+		}
 		
 		// Find the package directory
 		const packagePath = path.join(tempDir, "node_modules", ...servicePackage.split('/'));
@@ -141,9 +154,13 @@ export async function getServiceOperations(servicePackage) {
 			}
 		}
 		
-		// If we can't fetch operations, return empty
+		// Return error details for better user feedback
 		console.warn(`  Could not fetch operations: ${error.message}`);
-		return { operations: [], clientName: "" };
+		return { 
+			operations: [], 
+			clientName: "", 
+			error: error.message 
+		};
 	}
 }
 

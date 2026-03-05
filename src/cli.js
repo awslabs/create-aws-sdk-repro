@@ -8,7 +8,7 @@ import { generateBrowserProject } from "./sdks/javascript/environments/browser/g
 import { generateNodeProject } from "./sdks/javascript/environments/node/generate.js";
 import { generateReactNativeProject } from "./sdks/javascript/environments/react-native/generate.js";
 import { generateJavaProject } from "./sdks/java/generate.js";
-import { AWS_SERVICES, isValidService, getServiceSuggestions, getServiceDisplayName, getServiceErrorMessage } from "./services.js";
+import { AWS_SERVICES, isValidService, getServiceSuggestions, getServiceDisplayName, getServiceErrorMessage, findSimilarServices } from "./services.js";
 import { 
 	getServiceOperations, 
 	isValidOperation, 
@@ -105,8 +105,9 @@ async function main() {
 		},
 		validate: (value) => {
 			if (!value) return "Service is required";
-			if (!isValidService(value)) {
-				return getServiceErrorMessage(value);
+			// Basic format validation only - actual package existence checked during operation fetch
+			if (!value.startsWith("@aws-sdk/client-")) {
+				return 'Service must start with "@aws-sdk/client-"';
 			}
 			return true;
 		},
@@ -115,7 +116,26 @@ async function main() {
 
 	// Step 5: Fetch available operations for the selected service
 	console.log(`\nFetching available operations for ${getServiceDisplayName(serviceAnswer.service)}...`);
-	const { operations: availableOperations, clientName: actualClientName } = await getServiceOperations(serviceAnswer.service);
+	const { operations: availableOperations, clientName: actualClientName, error } = await getServiceOperations(serviceAnswer.service);
+	
+	if (error) {
+		console.error(`\nError: Could not fetch operations for ${serviceAnswer.service}`);
+		console.error(`Reason: ${error}`);
+		
+		// Check if it's a known service and suggest alternatives
+		if (!isValidService(serviceAnswer.service)) {
+			const similar = findSimilarServices(serviceAnswer.service);
+			if (similar.length > 0) {
+				const suggestions = similar.map(s => getServiceDisplayName(s)).join(", ");
+				console.error(`\nDid you mean one of these? ${suggestions}`);
+			}
+		}
+		
+		console.error('\nPlease verify the service package exists on npm:');
+		console.error(`https://www.npmjs.com/package/${serviceAnswer.service}`);
+		process.exit(1);
+	}
+	
 	if (availableOperations.length > 0) {
 		console.log(`Found ${availableOperations.length} operations\n`);
 	} else {
