@@ -15,6 +15,7 @@ import {
 	getOperationSuggestions,
 	getOperationErrorMessage 
 } from "./operations.js";
+import { randomUUID } from "crypto";
 import {
 	AWS_REGIONS,
 	isValidRegion,
@@ -90,7 +91,7 @@ async function main() {
 		name: "projectName",
 		message: "Enter project name:",
 		validate: (value) => !!value.trim() || "Project name is required",
-		initial: `aws-sdk-repro${Date.now()}`,
+		initial: `aws-sdk-repro-${randomUUID().split('-')[0]}`,
 	}, { onCancel: () => process.exit(0) });
 
 	// Step 4: Service Selection

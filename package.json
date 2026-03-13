@@ -21,7 +21,6 @@
 	},
 	"homepage": "https://github.com/awslabs/create-aws-sdk-repro#readme",
 	"dependencies": {
-		"path": "^0.12.7",
 		"prompts": "^2.4.2"
 	}
 }
