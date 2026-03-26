@@ -1,6 +1,6 @@
 {
 	"name": "create-aws-sdk-repro",
-	"version": "1.0.0",
+	"version": "0.1.0",
 	"description": "Create reproducible env for AWS SDK",
 	"main": "index.js",
 	"type": "module",
