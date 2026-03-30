@@ -1,11 +1,11 @@
 {
-	"name": "@aws-sdk/repro",
+	"name": "@aws-sdk/create-repro",
 	"version": "0.1.0",
-	"description": "Create reproducible env for AWS SDK",
+	"description": "Create Minimal Reproduction for AWS SDKs",
 	"main": "index.js",
 	"type": "module",
 	"bin": {
-		"create-aws-sdk-repro": "./src/cli.js"
+		"create-repro": "./src/cli.js"
 	},
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"
