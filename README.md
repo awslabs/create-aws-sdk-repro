@@ -3,9 +3,9 @@
 [![Apache 2 licensed][apache-badge]][apache-url]
 
 [apache-badge]: https://img.shields.io/badge/license-APACHE2-blue.svg
-[apache-url]: https://github.com/awslabs/aws-sdk-python/blob/main/LICENSE
+[apache-url]: https://github.com/awslabs/create-aws-sdk-repro/blob/main/LICENSE
 
-`create-aws-sdk-repro` is a CLI tool that generates ready-to-run project environments for AWS SDK for JavaScript v3. It supports Node.js, Browser (Vite + Cognito), and React Native environments across AWS services with autocomplete, operation validation, and typo detection.
+`@aws-sdk/create-repro` is a CLI tool that generates ready-to-run project environments for AWS SDK for JavaScript v3. It supports Node.js, Browser (Vite + Cognito), and React Native environments across AWS services with autocomplete, operation validation, and typo detection.
 
 ## Prerequisites
 
@@ -13,18 +13,10 @@
 - AWS credentials configured on your machine (for Node.js projects)
   - See [Configuring the AWS SDK for JavaScript](https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/configuring-the-jssdk.html)
 
-## Installation & Usage
+## Usage
 
 ```bash
-# Clone the repository
-git clone https://github.com/awslabs/create-aws-sdk-repro.git
-cd create-aws-sdk-repro
-
-# Install dependencies
-npm install
-
-# Run the CLI
-node src/cli.js
+npm create @aws-sdk/repro
 ```
 
 ## Interactive Prompts
@@ -35,8 +27,8 @@ The CLI guides you through the following steps:
 AWS SDK Reproduction Project Generator
 
 ? Select JavaScript environment: (Node.js / Browser / React Native)
-? Enter project name: aws-sdk-repro1234567890
-? Select or search for AWS service: (autocomplete from 198 services)
+? Enter project name: aws-sdk-repro-a1b2c3d4
+? Select or search for AWS service: (autocomplete)
 
 Fetching available operations for S3...
 Found 128 operations
@@ -45,10 +37,10 @@ Found 128 operations
 ? Select or enter AWS region: us-east-1 - US East (N. Virginia)
 
 Successfully created JS project at:
-/path/to/aws-sdk-repro1234567890
+/path/to/aws-sdk-repro-a1b2c3d4
 
   To get started:
-  cd aws-sdk-repro1234567890
+  cd aws-sdk-repro-a1b2c3d4
   npm install
   npm start
 ```
@@ -75,18 +67,19 @@ Generates a full React Native project via `@react-native-community/cli` (pinned 
 - **Region validation**: AWS regions with display names, format validation, and underscore-to-hyphen correction
 - **Kebab-case input**: Operations entered as `list-buckets` are automatically converted to `ListBucketsCommand`
 
-## Testing Locally
-
-To test the CLI end-to-end:
+## Development
 
 ```bash
-# Run the CLI and generate a project
+# Clone the repository
+git clone https://github.com/awslabs/create-aws-sdk-repro.git
+cd create-aws-sdk-repro
+npm install
+
+# Run the CLI
 node src/cli.js
 
 # Navigate to the generated project
 cd <your-project-name>
-
-# Install dependencies and run
 npm install
 npm start
 ```
