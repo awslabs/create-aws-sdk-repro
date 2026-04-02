@@ -16,18 +16,15 @@ const generateIndexJs = (answers) => {
 	return `
 import { ${clientName}, ${answers.operationCommand} } from '${answers.service}';
 
-const main = async () => {
-  try {
-    const client = new ${clientName}();
-    const input = {}; // Add your input parameters here
-    const command = new ${answers.operationCommand}(input);
-    const response = await client.send(command);
-    console.log('Success:', response);
-  } catch (error) {
-    console.error('Error:', error);
-  }
-};
-main();
+try {
+  const client = new ${clientName}({ region: '${answers.region}' });
+  const input = {}; // Add your input parameters here
+  const command = new ${answers.operationCommand}(input);
+  const response = await client.send(command);
+  console.log('Success:', response);
+} catch (error) {
+  console.error('Error:', error);
+}
 `;
 };
 export const generateNodeProject = (answers, projectDir) => {
