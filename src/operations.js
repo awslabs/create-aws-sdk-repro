@@ -4,6 +4,16 @@ import path from "path";
 import os from "os";
 
 /**
+ * Validates that a package name contains only safe characters
+ * @param {string} packageName - The npm package name to validate
+ * @returns {boolean} - True if the package name is safe
+ */
+function isSafePackageName(packageName) {
+	// npm package names: lowercase, hyphens, dots, underscores, @scope/name
+	return /^(@[a-z0-9-~][a-z0-9-._~]*\/)?[a-z0-9-~][a-z0-9-._~]*$/.test(packageName);
+}
+
+/**
  * Attempts to get available operations for a service by installing and inspecting the package
  * @param {string} servicePackage - The service package name (e.g., "@aws-sdk/client-s3")
  * @returns {Promise<{operations: string[], clientName: string, error?: string}>} - Operations in kebab-case, actual client name, and optional error
@@ -27,6 +37,13 @@ export async function getServiceOperations(servicePackage) {
 		
 		// Install the package
 		console.log(`  Installing ${servicePackage}...`);
+		if (!isSafePackageName(servicePackage)) {
+			return {
+				operations: [],
+				clientName: "",
+				error: `Invalid package name: "${servicePackage}". Package names must contain only lowercase letters, numbers, hyphens, dots, and underscores.`
+			};
+		}
 		try {
 			execSync(`npm install ${servicePackage}@latest --no-save --silent --no-audit --no-fund --loglevel=error`, {
 				cwd: tempDir,

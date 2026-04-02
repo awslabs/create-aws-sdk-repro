@@ -6,9 +6,10 @@ Region: {{region}}
 
 ## Running the Project
 
-Configure AWS credentials:
+Configure AWS credentials using the AWS CLI:
 
 ```bash
-export AWS_ACCESS_KEY_ID="YOUR_ACCESS_KEY"
-export AWS_SECRET_ACCESS_KEY="YOUR_SECRET_KEY"
+aws configure
 ```
+
+This stores credentials securely in `~/.aws/credentials`. For production environments, use IAM roles attached to EC2 instances or ECS tasks instead of long-term credentials.

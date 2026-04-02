@@ -20,6 +20,11 @@ export const generateReactNativeProject = (answers, projectDir) => {
 	// React Native requires alphanumeric project names (no hyphens, underscores, or special chars)
 	const projectName = answers.projectName.replace(/[^a-zA-Z0-9]/g, "");
 	
+	// Validate sanitized project name to prevent command injection
+	if (!projectName || !/^[a-zA-Z0-9]+$/.test(projectName)) {
+		throw new Error(`Invalid project name: "${answers.projectName}". Project name must contain at least one alphanumeric character.`);
+	}
+	
 	// Update projectDir to match the sanitized name
 	const parentDir = dirname(projectDir);
 	const actualProjectDir = join(parentDir, projectName);
@@ -119,6 +124,8 @@ The policy should be specific to the operations you want to test.
 4. Use the JSON editor and add a policy for ${serviceName}:
 
 **Example policy for ${serviceName} (adjust based on your operation):**
+
+> **Important:** Replace the \`Resource\` value with specific resource ARNs for your use case. Using \`"*"\` is shown here for testing convenience only and should be scoped to specific resources in production.
 
 \`\`\`json
 {

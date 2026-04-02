@@ -98,6 +98,8 @@ The policy should be specific to the operations you want to test.
 
 **Example policy for ${serviceName} (adjust based on your operation):**
 
+> **Important:** Replace the \`Resource\` value with specific resource ARNs for your use case. Using \`"*"\` is shown here for testing convenience only and should be scoped to specific resources in production.
+
 \`\`\`json
 {
   "Version": "2012-10-17",
