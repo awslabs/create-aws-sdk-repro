@@ -19,6 +19,10 @@
 npm create @aws-sdk/repro
 ```
 
+After running `npm start` in the generated project, you should see the API response printed to the console. If you see a credentials error, verify your AWS credentials are configured correctly by running `aws sts get-caller-identity`.
+
+> **Note:** Running the generated projects makes API calls to AWS services, which may incur charges based on standard [AWS pricing](https://aws.amazon.com/pricing/). Review pricing for the services you use and clean up resources when finished.
+
 ## Interactive Prompts
 
 The CLI guides you through the following steps:
@@ -107,6 +111,12 @@ const input = {
   // IDE autocomplete will show available fields since types are already imported
 };
 ```
+
+## Cleanup
+
+The generated projects are standalone directories on your local machine. To clean up, delete the project directory.
+
+If you created a Cognito Identity Pool for Browser or React Native testing, delete the Identity Pool and any associated IAM roles that are no longer needed.
 
 ## Security
 

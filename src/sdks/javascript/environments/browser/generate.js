@@ -96,9 +96,9 @@ The policy should be specific to the operations you want to test.
 3. Click "Add permissions" > "Create inline policy"
 4. Use the JSON editor and add a policy for ${serviceName}:
 
-**Example policy for ${serviceName} (adjust based on your operation):**
+> **Important:** The examples below use \`"Resource": "*"\` for testing convenience only. In production, replace with specific resource ARNs (e.g., \`"arn:aws:s3:::my-bucket/*"\`).
 
-> **Important:** Replace the \`Resource\` value with specific resource ARNs for your use case. Using \`"*"\` is shown here for testing convenience only and should be scoped to specific resources in production.
+**Example policy for ${serviceName} (adjust based on your operation):**
 
 \`\`\`json
 {

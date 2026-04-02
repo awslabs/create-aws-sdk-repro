@@ -125,7 +125,9 @@ The policy should be specific to the operations you want to test.
 
 **Example policy for ${serviceName} (adjust based on your operation):**
 
-> **Important:** Replace the \`Resource\` value with specific resource ARNs for your use case. Using \`"*"\` is shown here for testing convenience only and should be scoped to specific resources in production.
+> **Important:** The examples below use \`"Resource": "*"\` for testing convenience only. In production, replace with specific resource ARNs (e.g., \`"arn:aws:s3:::my-bucket/*"\`).
+
+**Example policy for ${serviceName} (adjust based on your operation):**
 
 \`\`\`json
 {
