@@ -4,11 +4,15 @@
 	"description": "Create Minimal Reproduction for AWS SDKs",
 	"main": "index.js",
 	"type": "module",
+	"files": [
+		"src/"
+	],
 	"bin": {
 		"create-repro": "./src/cli.js"
 	},
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"release": "changeset publish"
 	},
 	"repository": {
 		"type": "git",
@@ -22,5 +26,8 @@
 	"homepage": "https://github.com/awslabs/create-aws-sdk-repro#readme",
 	"dependencies": {
 		"prompts": "^2.4.2"
+	},
+	"devDependencies": {
+		"@changesets/cli": "^2.29.4"
 	}
 }
