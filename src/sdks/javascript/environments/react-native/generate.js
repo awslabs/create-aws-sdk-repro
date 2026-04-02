@@ -60,7 +60,8 @@ export const generateReactNativeProject = (answers, projectDir) => {
 		.replace(/{{serviceClient}}/g, clientName)
 		.replace(/{{service}}/g, answers.service)
 		.replace(/{{operation}}/g, operationName)
-		.replace(/{{operationCommand}}/g, answers.operationCommand);
+		.replace(/{{operationCommand}}/g, answers.operationCommand)
+		.replace(/{{region}}/g, answers.region);
 	
 	// 2. Update package.json with AWS SDK dependencies
 	const pkgPath = join(actualProjectDir, "package.json");

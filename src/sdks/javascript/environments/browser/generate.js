@@ -28,7 +28,8 @@ export const generateBrowserProject = (answers, projectDir) => {
 	const populatedJs = jsTemplate
 		.replace(/{{serviceClient}}/g, clientName)
 		.replace(/{{service}}/g, answers.service)
-		.replace(/{{operation}}/g, operationName);
+		.replace(/{{operation}}/g, operationName)
+		.replace(/{{region}}/g, answers.region);
 	
 	// 2. Generate HTML file
 	const htmlTemplate = readFileSync(
