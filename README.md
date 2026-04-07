@@ -57,7 +57,7 @@ Generates a project using the default AWS credential chain. Run with `npm start`
 
 ### Browser
 
-Generates a Vite-based project with Amazon Cognito Identity Pool for browser-safe credentials. A `COGNITO_SETUP.md` guide is included with setup instructions. Run with `npm start` (opens browser via Vite dev server).
+Generates a [Vite](https://vite.dev/)-based project with Amazon Cognito Identity Pool for browser-safe credentials. A `COGNITO_SETUP.md` guide is included with setup instructions. Run with `npm start` (opens browser via Vite dev server).
 
 ### React Native
 
@@ -65,7 +65,7 @@ Generates a full React Native project via `@react-native-community/cli` (pinned 
 
 ## Features
 
-- **Service autocomplete**: Search across `@aws-sdk/client-*` packages with fuzzy matching
+- **Service autocomplete**: Search across `@aws-sdk/client-*` packages with fuzzy matching (flexible search that finds close matches)
 - **Typo detection**: Uses Levenshtein distance, a measure of character differences (max 2 edits), to suggest corrections for mistyped services and regions
 - **Dynamic operation discovery**: Temporarily installs the selected SDK package to discover available operations and extract the correct client name (such as `DynamoDBClient` not `DynamodbClient`)
 - **Region validation**: AWS regions with display names, format validation, and underscore-to-hyphen correction
@@ -117,6 +117,8 @@ const input = {
 The generated projects are standalone directories on your local machine. To clean up, delete the project directory.
 
 If you created an Amazon Cognito Identity Pool for Browser or React Native testing, delete the Identity Pool and any associated IAM roles that are no longer needed.
+
+If your generated project created AWS resources (such as S3 buckets or DynamoDB tables), delete those resources through the AWS Management Console or AWS CLI to avoid ongoing charges.
 
 ## Security
 

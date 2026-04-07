@@ -124,7 +124,7 @@ The policy should be specific to the operations you want to test.
 3. Click "Add permissions" > "Create inline policy"
 4. Use the JSON editor and add a policy for ${serviceName}:
 
-> **Important:** The examples below use \`"Resource": "*"\` for testing convenience only. In production, replace with specific resource ARNs (such as \`"arn:aws:s3:::my-bucket/*"\`).
+> **Important:** The examples below use \`"Resource": "*"\` for convenience. Update the policy to follow the [principle of least privilege](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#grant-least-privilege) by replacing \`"*"\` with specific resource ARNs for your use case.
 
 **Recommended: Policy scoped to your specific operation:**
 
