@@ -22,6 +22,7 @@ jobs:
         with:
           node-version: "22.x"
           cache: "npm"
+          registry-url: "https://registry.npmjs.org"
 
       - run: npm ci
 
@@ -33,3 +34,4 @@ jobs:
           title: Publish <version>
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
