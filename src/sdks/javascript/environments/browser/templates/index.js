@@ -15,9 +15,9 @@ const displayError = (message) => {
 };
 
 // AWS Client Configuration
-// TODO: Replace with your actual Cognito Identity Pool ID and region
+// TODO: Replace with your actual Cognito identity pool ID and region
 const REGION = "{{region}}"; // TODO: Replace with your AWS region if different
-const IDENTITY_POOL_ID = "{{region}}:EXAMPLE-0000-0000-0000-EXAMPLE00000"; // TODO: Replace with your Amazon Cognito Identity Pool ID
+const IDENTITY_POOL_ID = "{{region}}:EXAMPLE-0000-0000-0000-EXAMPLE00000"; // TODO: Replace with your Amazon Cognito identity pool ID
 
 // Validate configuration before initializing client
 if (REGION === "{{region}}" && IDENTITY_POOL_ID === "{{region}}:EXAMPLE-0000-0000-0000-EXAMPLE00000") {
@@ -49,10 +49,10 @@ const client = new {{serviceClient}}({
     // Provide helpful error messages for common issues
     if (error.name === 'NotAuthorizedException' || error.name === 'AccessDeniedException') {
       errorMessage += '\n\nThis may be due to insufficient IAM permissions. ' +
-        'Check the IAM role attached to your Cognito Identity Pool. ' +
+        'Check the IAM role attached to your Cognito identity pool. ' +
         'Refer to COGNITO_SETUP.md for permission setup.';
     } else if (error.name === 'InvalidIdentityPoolConfigurationException') {
-      errorMessage += '\n\nInvalid Cognito Identity Pool configuration. ' +
+      errorMessage += '\n\nInvalid Cognito identity pool configuration. ' +
         'Verify your IDENTITY_POOL_ID and REGION are correct. ' +
         'Refer to COGNITO_SETUP.md for setup instructions.';
     }

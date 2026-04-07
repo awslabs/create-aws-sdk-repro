@@ -68,18 +68,18 @@ export const generateBrowserProject = (answers, projectDir) => {
 	// 5. Add security documentation
 	const cognitoSetup = `# Amazon Cognito Setup for Browser Authentication
 
-This browser-based AWS SDK project requires authentication via Amazon Cognito Identity Pool.
+This browser-based AWS SDK project requires authentication via Amazon Cognito identity pool.
 
 ## Why Amazon Cognito?
 
-Browser applications cannot securely store AWS credentials. Amazon Cognito Identity Pool provides:
+Browser applications cannot securely store AWS credentials. Amazon Cognito identity pool provides:
 - Temporary, scoped credentials for browser clients
 - No long-term credentials in client code
 - Fine-grained access control via IAM roles
 
 ## Quick Setup Steps
 
-### 1. Create a Cognito Identity Pool for Testing
+### 1. Create a Cognito identity pool for Testing
 
 1. Go to [AWS Console > Cognito > Identity Pools](https://console.aws.amazon.com/cognito/v2/identity)
 2. Click "Create identity pool"
@@ -92,7 +92,7 @@ Browser applications cannot securely store AWS credentials. Amazon Cognito Ident
 
 The policy should be specific to the operations you want to test.
 
-1. In the Cognito Identity Pool page, go to the "User access" tab
+1. In the Cognito identity pool page, go to the "User access" tab
 2. Click on the "Unauthenticated role" link (opens IAM console)
 3. Click "Add permissions" > "Create inline policy"
 4. Use the JSON editor and add a policy for ${serviceName}:
@@ -189,8 +189,8 @@ const IDENTITY_POOL_ID = "YOUR_IDENTITY_POOL_ID"; // From step 1
 
 ## Reference Links
 
-- [Create a Cognito Identity Pool](https://docs.aws.amazon.com/cognito/latest/developerguide/tutorial-create-identity-pool.html)
-- [Cognito Identity Pools Documentation](https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-identity.html)
+- [Create a Cognito identity pool](https://docs.aws.amazon.com/cognito/latest/developerguide/tutorial-create-identity-pool.html)
+- [Cognito identity pools Documentation](https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-identity.html)
 - [AWS SDK for JavaScript v3 - Browser](https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/getting-started-browser.html)
 - [IAM Policies](https://docs.aws.amazon.com/service-authorization/latest/reference/reference.html)
 
