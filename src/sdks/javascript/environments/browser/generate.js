@@ -66,13 +66,13 @@ export const generateBrowserProject = (answers, projectDir) => {
 	);
 	
 	// 5. Add security documentation
-	const cognitoSetup = `# Cognito Setup for Browser Authentication
+	const cognitoSetup = `# Amazon Cognito Setup for Browser Authentication
 
 This browser-based AWS SDK project requires authentication via Amazon Cognito Identity Pool.
 
-## Why Cognito?
+## Why Amazon Cognito?
 
-Browser applications cannot securely store AWS credentials. Cognito Identity Pool provides:
+Browser applications cannot securely store AWS credentials. Amazon Cognito Identity Pool provides:
 - Temporary, scoped credentials for browser clients
 - No long-term credentials in client code
 - Fine-grained access control via IAM roles
@@ -86,7 +86,7 @@ Browser applications cannot securely store AWS credentials. Cognito Identity Poo
 3. Enter a pool name (e.g., "test-${serviceName}-pool")
 4. Enable "Unauthenticated identities" for testing
 5. Click "Create pool"
-6. **Note down the Identity Pool ID** (format: \`region:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx\`)
+6. **Note down the Identity Pool ID** (format: \`your-region:EXAMPLE-xxxx-xxxx-xxxx-xxxxxxxxxxxx\`)
 
 ### 2. Add a Policy to the Unauthenticated IAM Role
 
@@ -97,10 +97,26 @@ The policy should be specific to the operations you want to test.
 3. Click "Add permissions" > "Create inline policy"
 4. Use the JSON editor and add a policy for ${serviceName}:
 
-> **Important:** The examples below use \`"Resource": "*"\` for testing convenience only. In production, replace with specific resource ARNs (e.g., \`"arn:aws:s3:::my-bucket/*"\`).
+> **Important:** The examples below use \`"Resource": "*"\` for testing convenience only. In production, replace with specific resource ARNs (such as \`"arn:aws:s3:::my-bucket/*"\`).
 
-**Example policy for ${serviceName} (adjust based on your operation):**
+**Recommended: Policy scoped to your specific operation:**
 
+\`\`\`json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "${serviceName}:${answers.operation.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('')}"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+\`\`\`
+
+**Alternative: Broader permissions for testing multiple operations:**
 \`\`\`json
 {
   "Version": "2012-10-17",
@@ -111,22 +127,6 @@ The policy should be specific to the operations you want to test.
         "${serviceName}:List*",
         "${serviceName}:Describe*",
         "${serviceName}:Get*"
-      ],
-      "Resource": "*"
-    }
-  ]
-}
-\`\`\`
-
-**For specific operations**, be more restrictive:
-\`\`\`json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "${serviceName}:${answers.operation.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('')}"
       ],
       "Resource": "*"
     }
@@ -175,7 +175,7 @@ const IDENTITY_POOL_ID = "YOUR_IDENTITY_POOL_ID"; // From step 1
 
 ### "InvalidIdentityPoolConfigurationException"
 - The Identity Pool ID or region is incorrect
-- Verify the Identity Pool ID format: \`region:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx\`
+- Verify the Identity Pool ID format: \`your-region:EXAMPLE-xxxx-xxxx-xxxx-xxxxxxxxxxxx\`
 - Ensure the region matches where you created the Identity Pool
 
 ## Security Best Practices
@@ -192,7 +192,7 @@ const IDENTITY_POOL_ID = "YOUR_IDENTITY_POOL_ID"; // From step 1
 - [Create a Cognito Identity Pool](https://docs.aws.amazon.com/cognito/latest/developerguide/tutorial-create-identity-pool.html)
 - [Cognito Identity Pools Documentation](https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-identity.html)
 - [AWS SDK for JavaScript v3 - Browser](https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/getting-started-browser.html)
-- [IAM Policies for ${serviceName}](https://docs.aws.amazon.com/service-authorization/latest/reference/list_${serviceName.toLowerCase()}.html)
+- [IAM Policies](https://docs.aws.amazon.com/service-authorization/latest/reference/reference.html)
 
 ## Production Considerations
 

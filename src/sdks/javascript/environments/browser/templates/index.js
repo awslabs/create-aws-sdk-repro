@@ -17,7 +17,7 @@ const displayError = (message) => {
 // AWS Client Configuration
 // TODO: Replace with your actual Cognito Identity Pool ID and region
 const REGION = "{{region}}"; // TODO: Replace with your AWS region if different
-const IDENTITY_POOL_ID = "{{region}}:EXAMPLE-0000-0000-0000-EXAMPLE00000"; // TODO: Replace with your Cognito Identity Pool ID
+const IDENTITY_POOL_ID = "{{region}}:EXAMPLE-0000-0000-0000-EXAMPLE00000"; // TODO: Replace with your Amazon Cognito Identity Pool ID
 
 // Validate configuration before initializing client
 if (REGION === "{{region}}" && IDENTITY_POOL_ID === "{{region}}:EXAMPLE-0000-0000-0000-EXAMPLE00000") {

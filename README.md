@@ -5,7 +5,7 @@
 [apache-badge]: https://img.shields.io/badge/license-APACHE2-blue.svg
 [apache-url]: https://github.com/awslabs/create-aws-sdk-repro/blob/main/LICENSE
 
-`@aws-sdk/create-repro` is a CLI tool that generates ready-to-run project environments for AWS SDK for JavaScript v3. It supports Node.js, Browser (Vite + Cognito), and React Native environments across AWS services with autocomplete, operation validation, and typo detection.
+`@aws-sdk/create-repro` is a CLI tool that generates ready-to-run project environments for AWS SDK for JavaScript v3. It supports Node.js, Browser (Vite + Amazon Cognito), and React Native environments across AWS services with autocomplete, operation validation, and typo detection.
 
 ## Prerequisites
 
@@ -61,15 +61,15 @@ Generates a Vite-based project with Amazon Cognito Identity Pool for browser-saf
 
 ### React Native
 
-Generates a full React Native project via `@react-native-community/cli` (pinned to RN 0.76.6 for Xcode 15 compatibility). Includes required polyfills (`react-native-get-random-values`, `react-native-url-polyfill`, `web-streams-polyfill`) and Cognito authentication.
+Generates a full React Native project via `@react-native-community/cli` (pinned to RN 0.76.6 for Xcode 15 compatibility). Includes required polyfills (compatibility libraries that provide missing platform features: `react-native-get-random-values`, `react-native-url-polyfill`, `web-streams-polyfill`) and Amazon Cognito authentication.
 
 ## Features
 
 - **Service autocomplete**: Search across `@aws-sdk/client-*` packages with fuzzy matching
-- **Typo detection**: Levenshtein distance (max 2 edits) suggests corrections for mistyped services and regions
-- **Dynamic operation discovery**: Temporarily installs the selected SDK package to discover available operations and extract the correct client name (e.g., `DynamoDBClient` not `DynamodbClient`)
+- **Typo detection**: Uses Levenshtein distance, a measure of character differences (max 2 edits), to suggest corrections for mistyped services and regions
+- **Dynamic operation discovery**: Temporarily installs the selected SDK package to discover available operations and extract the correct client name (such as `DynamoDBClient` not `DynamodbClient`)
 - **Region validation**: AWS regions with display names, format validation, and underscore-to-hyphen correction
-- **Kebab-case input**: Operations entered as `list-buckets` are automatically converted to `ListBucketsCommand`
+- **Kebab-case input**: Operations entered in kebab-case format (lowercase with hyphens, such as `list-buckets`) are automatically converted to `ListBucketsCommand`
 
 ## Development
 
@@ -116,7 +116,7 @@ const input = {
 
 The generated projects are standalone directories on your local machine. To clean up, delete the project directory.
 
-If you created a Cognito Identity Pool for Browser or React Native testing, delete the Identity Pool and any associated IAM roles that are no longer needed.
+If you created an Amazon Cognito Identity Pool for Browser or React Native testing, delete the Identity Pool and any associated IAM roles that are no longer needed.
 
 ## Security
 

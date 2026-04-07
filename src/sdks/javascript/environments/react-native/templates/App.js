@@ -12,7 +12,7 @@ import { CognitoIdentityClient } from '@aws-sdk/client-cognito-identity';
 
 // Configuration - Update these values before running
 const REGION = '{{region}}'; // TODO: Replace with your AWS region if different
-const IDENTITY_POOL_ID = '{{region}}:EXAMPLE-0000-0000-0000-EXAMPLE00000'; // TODO: Replace with your Cognito Identity Pool ID
+const IDENTITY_POOL_ID = '{{region}}:EXAMPLE-0000-0000-0000-EXAMPLE00000'; // TODO: Replace with your Amazon Cognito Identity Pool ID
 
 // Validate configuration
 const isConfigured = REGION !== '{{region}}' || IDENTITY_POOL_ID !== '{{region}}:EXAMPLE-0000-0000-0000-EXAMPLE00000';
