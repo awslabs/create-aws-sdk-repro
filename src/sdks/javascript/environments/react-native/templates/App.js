@@ -81,7 +81,7 @@ const App = () => {
         
         <View style={styles.buttonContainer}>
           <Button 
-            title={loading ? "Loading..." : "Click to make a call"} 
+            title={loading ? "Loading..." : "Make AWS call"} 
             onPress={makeAwsCall}
             disabled={loading}
           />

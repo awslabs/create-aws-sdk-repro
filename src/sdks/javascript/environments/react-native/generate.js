@@ -89,7 +89,7 @@ This React Native AWS SDK project requires authentication via Amazon Cognito ide
 
 ## Why Amazon Cognito?
 
-Mobile applications should not store AWS credentials directly. Amazon Cognito identity pool provides:
+Mobile applications should not embed long-term AWS credentials in application code. Amazon Cognito identity pool provides:
 - Temporary, scoped credentials for mobile clients
 - No long-term credentials in application code
 - Fine-grained access control via IAM roles
@@ -102,29 +102,25 @@ Mobile applications should not store AWS credentials directly. Amazon Cognito id
 npm install
 \`\`\`
 
-### 2. Create a Cognito identity pool for Testing
+### 2. Create a Cognito identity pool for testing
 
-### 2. Create a Cognito identity pool for Testing
-
-1. Go to [AWS Console > Cognito > Identity Pools](https://console.aws.amazon.com/cognito/v2/identity)
-2. Click "Create identity pool"
-3. Enter a pool name (e.g., "test-${serviceName}-pool")
+1. To create an identity pool, go to [AWS Console > Amazon Cognito > Identity Pools](https://console.aws.amazon.com/cognito/v2/identity)
+2. Choose "Create identity pool"
+3. Enter a pool name (such as "example-${serviceName}-pool")
 4. Enable "Unauthenticated identities" for testing
-5. Click "Create pool"
+5. Choose "Create pool"
 6. **Note down the Identity Pool ID** (format: \`your-region:EXAMPLE-xxxx-xxxx-xxxx-xxxxxxxxxxxx\`)
-
-### 3. Add a Policy to the Unauthenticated IAM Role
 
 ### 3. Add a Policy to the Unauthenticated IAM Role
 
 The policy should be specific to the operations you want to test.
 
-1. In the Cognito identity pool page, go to the "User access" tab
-2. Click on the "Unauthenticated role" link (opens IAM console)
-3. Click "Add permissions" > "Create inline policy"
+1. To add a policy to the unauthenticated IAM role, go to the "User access" tab in the Cognito identity pool page
+2. Choose on the "Unauthenticated role" link (opens IAM console)
+3. Choose "Add permissions" > "Create inline policy"
 4. Use the JSON editor and add a policy for ${serviceName}:
 
-> **Important:** The examples below use \`"Resource": "*"\` for convenience. Update the policy to follow the [principle of least privilege](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#grant-least-privilege) by replacing \`"*"\` with specific resource ARNs for your use case.
+> **Important:** The examples below use \`"Resource": "*"\` for convenience. For production use, follow the [principle of least privilege](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#grant-least-privilege) by replacing \`"*"\` with specific resource ARNs for your use case.
 
 **Recommended: Policy scoped to your specific operation:**
 
@@ -161,8 +157,8 @@ The policy should be specific to the operations you want to test.
 }
 \`\`\`
 
-5. Name the policy (e.g., "test-${serviceName}-policy")
-6. Click "Create policy"
+5. Name the policy (such as "example-${serviceName}-policy")
+6. Choose "Create policy"
 
 ### 4. Update App.js Configuration
 
@@ -224,7 +220,7 @@ For detailed setup instructions, see [React Native Environment Setup](https://re
 
 ## Common Errors and Solutions
 
-### "Configuration Error: Please update REGION and IDENTITY_POOL_ID"
+### "Configuration Error: Update REGION and IDENTITY_POOL_ID"
 - You haven't updated the placeholders in \`App.js\`
 - Update \`REGION\` and \`IDENTITY_POOL_ID\` with your actual values
 
@@ -284,7 +280,7 @@ For production applications:
 	fs.writeFileSync(join(actualProjectDir, "COGNITO_SETUP.md"), cognitoSetup);
 	
 	console.log(`\nReact Native project created successfully at: ${actualProjectDir}`);
-	console.log(`\nNote: Project directory name was sanitized to "${projectName}" (alphanumeric only)`);
+	console.log(`\nNote: The tool sanitized the project directory name to "${projectName}" (alphanumeric only)`);
 	console.log("\nNext steps:");
 	console.log(`1. cd ${projectName}`);
 	console.log("2. npm install");

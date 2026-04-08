@@ -201,7 +201,7 @@ export function isValidOperationFormat(operation) {
  */
 export function isValidOperation(operation, availableOperations) {
 	if (availableOperations.length === 0) {
-		// If we don't have the list, just validate format
+		// If the list is unavailable, validate format only
 		return isValidOperationFormat(operation);
 	}
 	return availableOperations.includes(operation);
