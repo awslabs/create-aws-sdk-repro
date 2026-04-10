@@ -41,7 +41,7 @@ export async function getServiceOperations(servicePackage) {
 			return {
 				operations: [],
 				clientName: "",
-				error: `Invalid package name: "${servicePackage}". Package names must contain only lowercase letters, numbers, hyphens, dots, and underscores.`
+				error: `Invalid package name: "${servicePackage}". Package names must contain only lowercase letters, numbers, hyphens, dots, underscores, and tildes.`
 			};
 		}
 		try {

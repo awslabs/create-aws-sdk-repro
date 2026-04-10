@@ -11,11 +11,11 @@ import { fromCognitoIdentityPool } from '@aws-sdk/credential-provider-cognito-id
 import { CognitoIdentityClient } from '@aws-sdk/client-cognito-identity';
 
 // Configuration - Update these values before running
-const REGION = '{{region}}'; // TODO: Replace with your AWS region if different
+const REGION = '{{region}}'; // TODO: Replace with your AWS region
 const IDENTITY_POOL_ID = '{{region}}:EXAMPLE-0000-0000-0000-EXAMPLE00000'; // TODO: Replace with your Amazon Cognito identity pool ID
 
 // Validate configuration
-const isConfigured = REGION !== '{{region}}' || IDENTITY_POOL_ID !== '{{region}}:EXAMPLE-0000-0000-0000-EXAMPLE00000';
+const isConfigured = REGION !== '{{region}}' && IDENTITY_POOL_ID !== '{{region}}:EXAMPLE-0000-0000-0000-EXAMPLE00000';
 
 const App = () => {
   const [response, setResponse] = useState('');

@@ -85,6 +85,8 @@ Browser applications should not embed long-term AWS credentials in client-side c
 2. Choose "Create identity pool"
 3. Enter a pool name (such as "example-${serviceName}-pool")
 4. Enable "Unauthenticated identities" for testing
+
+> **Note:** Unauthenticated access is for testing and reproduction only. For production, use [Amazon Cognito user pools](https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-identity-pools.html) with authenticated identities.
 5. Choose "Create pool"
 6. **Note down the Identity Pool ID** (format: \`your-region:EXAMPLE-xxxx-xxxx-xxxx-xxxxxxxxxxxx\`)
 

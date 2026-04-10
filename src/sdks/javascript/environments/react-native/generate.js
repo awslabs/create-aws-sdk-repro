@@ -22,7 +22,7 @@ export const generateReactNativeProject = (answers, projectDir) => {
 	
 	// Validate sanitized project name to prevent command injection
 	if (!projectName || !/^[a-zA-Z0-9]+$/.test(projectName)) {
-		throw new Error(`Invalid project name: "${answers.projectName}". Project name must contain at least one alphanumeric character.`);
+		throw new Error(`Invalid project name: "${answers.projectName}". Project name must be alphanumeric only (pattern: /^[a-zA-Z0-9]+$/).`);
 	}
 	
 	// Update projectDir to match the sanitized name
