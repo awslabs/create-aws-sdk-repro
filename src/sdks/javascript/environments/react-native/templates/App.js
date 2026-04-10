@@ -10,12 +10,12 @@ import { {{serviceClient}}, {{operationCommand}} } from '{{service}}';
 import { fromCognitoIdentityPool } from '@aws-sdk/credential-provider-cognito-identity';
 import { CognitoIdentityClient } from '@aws-sdk/client-cognito-identity';
 
-// Configuration - Update these values
-const REGION = 'REGION'; // e.g., 'us-east-1'
-const IDENTITY_POOL_ID = 'IDENTITY_POOL_ID'; // e.g., 'us-east-1:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx'
+// Configuration - Update these values before running
+const REGION = '{{region}}'; // TODO: Replace with your AWS region
+const IDENTITY_POOL_ID = '{{region}}:EXAMPLE-0000-0000-0000-EXAMPLE00000'; // TODO: Replace with your Amazon Cognito identity pool ID
 
 // Validate configuration
-const isConfigured = REGION !== 'REGION' && IDENTITY_POOL_ID !== 'IDENTITY_POOL_ID';
+const isConfigured = REGION !== '{{region}}' && IDENTITY_POOL_ID !== '{{region}}:EXAMPLE-0000-0000-0000-EXAMPLE00000';
 
 const App = () => {
   const [response, setResponse] = useState('');
@@ -56,7 +56,7 @@ const App = () => {
       let errorMessage = `Error: ${err.message || err}\n\n`;
       
       if (err.name === 'NotAuthorizedException' || err.name === 'AccessDeniedException') {
-        errorMessage += 'This error usually means the IAM role attached to your Cognito Identity Pool ' +
+        errorMessage += 'This error usually means the IAM role attached to your Cognito identity pool ' +
           'does not have sufficient permissions.\n\n' +
           'See COGNITO_SETUP.md for instructions on adding the required IAM policy.';
       } else if (err.name === 'InvalidIdentityPoolConfigurationException') {
@@ -81,7 +81,7 @@ const App = () => {
         
         <View style={styles.buttonContainer}>
           <Button 
-            title={loading ? "Loading..." : "Click to make a call"} 
+            title={loading ? "Loading..." : "Make AWS call"} 
             onPress={makeAwsCall}
             disabled={loading}
           />

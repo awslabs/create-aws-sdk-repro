@@ -28,7 +28,8 @@ export const generateBrowserProject = (answers, projectDir) => {
 	const populatedJs = jsTemplate
 		.replace(/{{serviceClient}}/g, clientName)
 		.replace(/{{service}}/g, answers.service)
-		.replace(/{{operation}}/g, operationName);
+		.replace(/{{operation}}/g, operationName)
+		.replace(/{{region}}/g, answers.region);
 	
 	// 2. Generate HTML file
 	const htmlTemplate = readFileSync(
@@ -65,39 +66,59 @@ export const generateBrowserProject = (answers, projectDir) => {
 	);
 	
 	// 5. Add security documentation
-	const cognitoSetup = `# Cognito Setup for Browser Authentication
+	const cognitoSetup = `# Amazon Cognito Setup for Browser Authentication
 
-This browser-based AWS SDK project requires authentication via Amazon Cognito Identity Pool.
+This browser-based AWS SDK project requires authentication via Amazon Cognito identity pool.
 
-## Why Cognito?
+## Why Amazon Cognito?
 
-Browser applications cannot securely store AWS credentials. Cognito Identity Pool provides:
+Browser applications should not embed long-term AWS credentials in client-side code. Amazon Cognito identity pool provides:
 - Temporary, scoped credentials for browser clients
 - No long-term credentials in client code
 - Fine-grained access control via IAM roles
 
 ## Quick Setup Steps
 
-### 1. Create a Cognito Identity Pool for Testing
+### 1. Create a Cognito identity pool for testing
 
-1. Go to [AWS Console > Cognito > Identity Pools](https://console.aws.amazon.com/cognito/v2/identity)
-2. Click "Create identity pool"
-3. Enter a pool name (e.g., "test-${serviceName}-pool")
+1. To create an identity pool, go to [AWS Console > Amazon Cognito > Identity Pools](https://console.aws.amazon.com/cognito/v2/identity)
+2. Choose "Create identity pool"
+3. Enter a pool name (such as "example-${serviceName}-pool")
 4. Enable "Unauthenticated identities" for testing
-5. Click "Create pool"
-6. **Note down the Identity Pool ID** (format: \`region:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx\`)
+
+> **Note:** Unauthenticated access is for testing and reproduction only. For production, use [Amazon Cognito user pools](https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-identity-pools.html) with authenticated identities.
+5. Choose "Create pool"
+6. **Note down the Identity Pool ID** (format: \`your-region:EXAMPLE-xxxx-xxxx-xxxx-xxxxxxxxxxxx\`)
 
 ### 2. Add a Policy to the Unauthenticated IAM Role
 
 The policy should be specific to the operations you want to test.
 
-1. In the Cognito Identity Pool page, go to the "User access" tab
-2. Click on the "Unauthenticated role" link (opens IAM console)
-3. Click "Add permissions" > "Create inline policy"
+1. To add a policy to the unauthenticated IAM role, go to the "User access" tab in the Cognito identity pool page
+2. Choose the "Unauthenticated role" link (opens IAM console)
+3. Choose "Add permissions" > "Create inline policy"
 4. Use the JSON editor and add a policy for ${serviceName}:
 
-**Example policy for ${serviceName} (adjust based on your operation):**
+> **Important:** The examples below use \`"Resource": "*"\` for convenience. For production use, follow the [principle of least privilege](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#grant-least-privilege) by replacing \`"*"\` with specific resource ARNs for your use case.
 
+**Recommended: Policy scoped to your specific operation:**
+
+\`\`\`json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "${serviceName}:${answers.operation.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('')}"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+\`\`\`
+
+**Alternative: Broader permissions for testing multiple operations:**
 \`\`\`json
 {
   "Version": "2012-10-17",
@@ -115,24 +136,8 @@ The policy should be specific to the operations you want to test.
 }
 \`\`\`
 
-**For specific operations**, be more restrictive:
-\`\`\`json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "${serviceName}:${answers.operation.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('')}"
-      ],
-      "Resource": "*"
-    }
-  ]
-}
-\`\`\`
-
-5. Name the policy (e.g., "test-${serviceName}-policy")
-6. Click "Create policy"
+5. Name the policy (such as "example-${serviceName}-policy")
+6. Choose "Create policy"
 
 ### 3. Update index.js Configuration
 
@@ -161,7 +166,7 @@ const IDENTITY_POOL_ID = "YOUR_IDENTITY_POOL_ID"; // From step 1
 
 ## Common Errors and Solutions
 
-### "Configuration Error: Please update REGION and IDENTITY_POOL_ID"
+### "Configuration Error: Update REGION and IDENTITY_POOL_ID"
 - You haven't updated the placeholders in \`index.js\`
 - Update \`REGION\` and \`IDENTITY_POOL_ID\` with your actual values
 
@@ -172,7 +177,7 @@ const IDENTITY_POOL_ID = "YOUR_IDENTITY_POOL_ID"; // From step 1
 
 ### "InvalidIdentityPoolConfigurationException"
 - The Identity Pool ID or region is incorrect
-- Verify the Identity Pool ID format: \`region:xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx\`
+- Verify the Identity Pool ID format: \`your-region:EXAMPLE-xxxx-xxxx-xxxx-xxxxxxxxxxxx\`
 - Ensure the region matches where you created the Identity Pool
 
 ## Security Best Practices
@@ -186,10 +191,10 @@ const IDENTITY_POOL_ID = "YOUR_IDENTITY_POOL_ID"; // From step 1
 
 ## Reference Links
 
-- [Create a Cognito Identity Pool](https://docs.aws.amazon.com/cognito/latest/developerguide/tutorial-create-identity-pool.html)
-- [Cognito Identity Pools Documentation](https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-identity.html)
+- [Create a Cognito identity pool](https://docs.aws.amazon.com/cognito/latest/developerguide/tutorial-create-identity-pool.html)
+- [Cognito identity pools Documentation](https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-identity.html)
 - [AWS SDK for JavaScript v3 - Browser](https://docs.aws.amazon.com/sdk-for-javascript/v3/developer-guide/getting-started-browser.html)
-- [IAM Policies for ${serviceName}](https://docs.aws.amazon.com/service-authorization/latest/reference/list_${serviceName.toLowerCase()}.html)
+- [IAM Policies](https://docs.aws.amazon.com/service-authorization/latest/reference/reference.html)
 
 ## Production Considerations
 

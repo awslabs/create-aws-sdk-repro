@@ -90,7 +90,12 @@ async function main() {
 		type: "text",
 		name: "projectName",
 		message: "Enter project name:",
-		validate: (value) => !!value.trim() || "Project name is required",
+		validate: (value) => {
+			if (!value.trim()) return "Project name is required";
+			if (/[/\\:*?"<>|]/.test(value)) return "Project name contains invalid characters";
+			if (value.includes("..")) return "Project name cannot contain path traversal";
+			return true;
+		},
 		initial: `aws-sdk-repro-${randomUUID().split('-')[0]}`,
 	}, { onCancel: () => process.exit(0) });
 
@@ -204,6 +209,13 @@ async function main() {
 	};
 
 	const projectDir = path.join(process.cwd(), answers.projectName);
+
+	// Sanitize project name to prevent path traversal
+	const resolvedDir = path.resolve(projectDir);
+	if (!resolvedDir.startsWith(process.cwd())) {
+		console.error("Error: Project name contains invalid path characters");
+		process.exit(1);
+	}
 
 	try {
 		if (fs.existsSync(projectDir)) {
