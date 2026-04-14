@@ -20,4 +20,3 @@
 - Region validation with display names and format correction
 - Kebab-case operation input with automatic PascalCase conversion
 - Generated COGNITO_SETUP.md for Browser and React Native projects
-- Java SDK v2 support (hidden from CLI, pending further testing)
