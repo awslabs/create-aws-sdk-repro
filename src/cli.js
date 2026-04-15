@@ -3,11 +3,9 @@
 import prompts from "prompts";
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
 import { generateBrowserProject } from "./sdks/javascript/environments/browser/generate.js";
 import { generateNodeProject } from "./sdks/javascript/environments/node/generate.js";
 import { generateReactNativeProject } from "./sdks/javascript/environments/react-native/generate.js";
-import { generateJavaProject } from "./sdks/java/generate.js";
 import { AWS_SERVICES, isValidService, getServiceSuggestions, getServiceDisplayName, getServiceErrorMessage, findSimilarServices } from "./services.js";
 import { 
 	getServiceOperations, 
@@ -22,12 +20,9 @@ import {
 	getRegionSuggestions,
 	getRegionDisplayName,
 	getRegionErrorMessage,
-	standardRegionToJava
 } from "./regions.js";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-// Utility functions for operation name conversion
+// Utility function for operation name conversion
 function kebabToPascalCase(str) {
 	return str
 		.split("-")
@@ -35,43 +30,17 @@ function kebabToPascalCase(str) {
 		.join("");
 }
 
-function kebabToCamelCase(str) {
-	const pascal = kebabToPascalCase(str);
-	return pascal.charAt(0).toLowerCase() + pascal.slice(1);
-}
-
-// Service lists for different SDKs
+// Service list for autocomplete
 export const JS_SERVICES = AWS_SERVICES.map(service => ({
 	title: getServiceDisplayName(service),
 	value: service
 }));
 
-const JAVA_SERVICES = [
-	{ title: "S3", value: "s3" },
-	{ title: "DynamoDB", value: "dynamodb" },
-	{ title: "EC2", value: "ec2" },
-	{ title: "IAM", value: "iam" },
-	{ title: "Lambda", value: "lambda" },
-];
-
 async function main() {
 	console.log("AWS SDK Reproduction Project Generator\n");
 	
-	// Step 1: SDK Selection
-	const sdkAnswer = { sdk: "js" }; // Default to JavaScript only
-	
-	// Uncomment below to re-enable Java option:
-	// const sdkAnswer = await prompts({
-	// 	type: "select",
-	// 	name: "sdk",
-	// 	message: "Select AWS SDK language:",
-	// 	choices: [
-	// 		{ title: "JavaScript", value: "js" },
-	// 		{ title: "Java", value: "java" },
-	// 	],
-	// 	initial: 0,
-	// }, { onCancel: () => process.exit(0) });
-	// if (!sdkAnswer.sdk) process.exit(0);
+	// Step 1: SDK defaults to JavaScript
+	const sdkAnswer = { sdk: "js" };
 
 	// Step 2: Environment
 	const environmentAnswer = await prompts({
@@ -228,20 +197,8 @@ async function main() {
 			fs.mkdirSync(projectDir, { recursive: true });
 		}
 
-		// JavaScript project generation
+		// Generate project
 		await handleJavascriptProject(answers, projectDir);
-		
-		// Java support preserved
-		// switch (answers.sdk) {
-		// 	case "js":
-		// 		await handleJavascriptProject(answers, projectDir);
-		// 		break;
-		// 	case "java":
-		// 		await handleJavaProject(answers, projectDir);
-		// 		break;
-		// 	default:
-		// 		throw new Error(`Unsupported SDK: ${answers.sdk}`);
-		// }
 
 		showSuccessMessage(answers, projectDir);
 	} catch (error) {
@@ -271,41 +228,16 @@ async function handleJavascriptProject(answers, projectDir) {
 	}
 }
 
-async function handleJavaProject(answers, projectDir) {
-	// Convert service name to Java format
-	answers.service = answers.service
-		.replace(/@aws-sdk\/client-/i, "")
-		.toLowerCase();
-	// Convert kebab-case operation to camelCase for Java
-	answers.operation = kebabToCamelCase(answers.operation);
-	// Convert standard region format to Java format (us-west-1 -> US_WEST_1)
-	answers.region = standardRegionToJava(answers.region);
-	await generateJavaProject(answers, projectDir);
-}
-
 function showSuccessMessage(answers, projectDir) {
-	const instructions = {
-		js: `
+	console.log(`
+Successfully created project at:
+${path.resolve(projectDir)}
+
   To get started:
   cd ${answers.projectName}
   npm install
   npm start
-    `,
-		java: `
-  To build and run:
-  cd ${answers.projectName}
-  mvn clean package
-  java -jar target/*.jar
-  
-  First-time setup:
-  chmod +x mvnw  # Make Maven wrapper executable
-    `,
-	};
-
-	console.log(`
-Successfully created ${answers.sdk.toUpperCase()} project at:
-${path.resolve(projectDir)}
-${instructions[answers.sdk]}`);
+`);
 }
 
 function cleanupOnError(projectDir) {
