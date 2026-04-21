@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.0
+
+### Major Changes
+
+- First stable release. Remove dotenv and credential-provider-node from generated projects. Add input sanitization for project names and package names. Simplify generated code with TLA. ([6ad27fe43e74313796626f2ed259638c3d143988](https://github.com/awslabs/create-aws-sdk-repro/commit/6ad27fe43e74313796626f2ed259638c3d143988))
+
 ## 0.1.1
 
 ### Patch Changes
