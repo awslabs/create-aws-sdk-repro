@@ -1,10 +1,6 @@
 import fs from "fs";
-import { readFileSync } from "fs";
-import { fileURLToPath } from "url";
-import { dirname, join } from "path";
+import { join } from "path";
 import { getServiceDisplayName } from "../../../../services.js";
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const generateIndexJs = (answers) => {
 	// Use actual client name from SDK package, with fallback to derived name
@@ -38,11 +34,9 @@ export const generateNodeProject = (answers, projectDir) => {
 		type: "module",
 		dependencies: {
 			[answers.service]: "latest",
-			"@aws-sdk/credential-provider-node": "latest",
-			dotenv: "^16.0.0",
 		},
 		scripts: {
-			start: "node -r dotenv/config index.js",
+			start: "node index.js",
 		},
 	};
 	fs.writeFileSync(

@@ -215,21 +215,3 @@ export function getRegionErrorMessage(region) {
 	
 	return `Region not found. Use format: prefix-direction-number (e.g., us-west-2, eu-central-1)`;
 }
-
-/**
- * Converts Java-style region format to standard format
- * @param {string} region - Region in Java format (e.g., "US_WEST_1")
- * @returns {string} - Region in standard format (e.g., "us-west-1")
- */
-export function javaRegionToStandard(region) {
-	return region.toLowerCase().replace(/_/g, "-");
-}
-
-/**
- * Converts standard region format to Java-style format
- * @param {string} region - Region in standard format (e.g., "us-west-1")
- * @returns {string} - Region in Java format (e.g., "US_WEST_1")
- */
-export function standardRegionToJava(region) {
-	return region.toUpperCase().replace(/-/g, "_");
-}
