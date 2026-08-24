@@ -151,7 +151,7 @@ export async function getServiceOperations(servicePackage) {
 		
 		// Cleanup
 		if (tempDir && fs.existsSync(tempDir)) {
-			fs.rmSync(tempDir, { recursive: true, force: true });
+			fs.rmSync(tempDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
 		}
 		
 		const result = Array.from(operations).sort();
@@ -165,7 +165,7 @@ export async function getServiceOperations(servicePackage) {
 		// Cleanup on error
 		if (tempDir && fs.existsSync(tempDir)) {
 			try {
-				fs.rmSync(tempDir, { recursive: true, force: true });
+				fs.rmSync(tempDir, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });
 			} catch (cleanupError) {
 				// Ignore cleanup errors
 			}
